@@ -1,0 +1,24 @@
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[project]
+name = "rcdsa"
+dynamic = ["version"]
+authors = [
+  { name="rubitcat", email="rubitcat@outlook.com" },
+]
+description = "✨yep, a datastruct and algorithm toolkit written in python."
+readme = "README.md"
+requires-python = ">=3.8"
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Operating System :: OS Independent",
+]
+
+[tool.pdm]
+version = { source = "file", path = "rcdsa/__init__.py" }
+distribution = true
+
+[tool.pdm.build]
+source-includes = ["scripts/", "tests/"]
