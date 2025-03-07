@@ -18,6 +18,10 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+[project.urls]
+Homepage = "https://rubitcat.cn/docsec/docs/software/datastruct-algorithm/algorithm-overview/"
+Issues = "https://github.com/rubitcat/rcdsa-python"
+
 [tool.pdm]
 version = { source = "file", path = "rcdsa/__init__.py" }
 distribution = true
