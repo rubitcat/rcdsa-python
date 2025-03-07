@@ -1,28 +1,19 @@
+from rcdsa.datastruct import Tree
 from rcdsa.datastruct import LinkedStack
 from rcdsa.datastruct import LinkedQueue
-from rcdsa.datastruct import Tree
 
 class BinaryTree(Tree):
-      
-  def __init__(self, seq=None):
-    length = len(seq)
-    if length == 0:
-      self.root = None
-    self.root = self.Node(seq[0])
-    queue = LinkedQueue()
-    queue.enqueue(self.root)
-    i = 1
-    while not queue.is_empty():
-      curr = queue.front()
-      queue.dequeue()
-      if i < length:
-        curr.left = self.Node(seq[i])
-        queue.enqueue(curr.left)
-        i += 1
-      if i < length:
-        curr.right = self.Node(seq[i])
-        queue.enqueue(curr.right)
-        i += 1
+  class Node:
+    def  __init__(self, data=None, left=None, right=None):
+      self.data  = data
+      self.left  = left
+      self.right = right
+
+  def __init__(self):
+    self.root = None
+
+  def is_empty(self):
+    return self.root is None;
 
   def insert(self, data=None):
     node = self.Node(data)
@@ -83,18 +74,16 @@ class BinaryTree(Tree):
     # using the lastes node replace the node we want to delete
     target_root.data = last_node.data
     if last_node_parent is not None:
-      if last_node_parent.left is not None:
+      if last_node_parent.left == last_node:
         last_node_parent.left = None
       else:
         last_node_parent.right = None
 
-
-  @classmethod
-  def traversal_preorder(cls, root, func):    
-    if root is None:
+  def traversal_preorder(self, func):
+    if self.root is None:
       return
     stack = LinkedStack()
-    stack.push(root)
+    stack.push(self.root)
     while not stack.is_empty():
       curr = stack.top()
       stack.pop()
@@ -104,12 +93,11 @@ class BinaryTree(Tree):
         stack.push(curr.left)
       func(curr.data)
       
-  @classmethod
-  def traversal_inorder(cls, root, func):
-    if root is None:
+  def traversal_inorder(self, func):
+    if self.root is None:
       return
     stack = LinkedStack()
-    curr = root
+    curr = self.root
     while curr is not None or not stack.is_empty():
       while curr is not None:
         stack.push(curr)
@@ -119,28 +107,31 @@ class BinaryTree(Tree):
       func(curr.data)
       curr = curr.right
     
-  @classmethod
-  def traversal_postorder(cls, root, func):
+  def traversal_postorder(self, func):
+    if self.root is None:
+      return
     stack = LinkedStack()
+    curr = self.root
     while True:
-      while root is not None:
-        stack.push(root)
-        stack.push(root)
-        root = root.left
+      while curr is not None:
+        stack.push(curr)
+        stack.push(curr)
+        curr = curr.left
       if stack.is_empty():
         return
-      root = stack.top()
+      curr = stack.top()
       stack.pop()
-      if not stack.is_empty() and stack.top() == root:
-        root = root.right
+      if not stack.is_empty() and stack.top() == curr:
+        curr = curr.right
       else:
-        func(root.data)
-        root = None
+        func(curr.data)
+        curr = None
 
-  @classmethod
-  def traversal_levelorder(cls, root, func):
+  def traversal_levelorder(self, func):
+    if self.root is None:
+      return
     queue = LinkedQueue()
-    queue.enqueue(root)
+    queue.enqueue(self.root)
     while not queue.is_empty():
       curr = queue.front()
       queue.dequeue()
@@ -150,8 +141,66 @@ class BinaryTree(Tree):
         queue.enqueue(curr.right)
       func(curr.data)
 
+  def clear(self):
+    pass
 
 
+  def get_parent_levelorder_seq(self) -> tuple[list,list]:
+    if self.root is None:
+      return [], []
+    parent_seq = []
+    levelorder_seq= []
+    queue = LinkedQueue()
+    queue.enqueue((self.root, -1))
+    i = 0
+    while not queue.is_empty():
+      curr, parent_idx = queue.front()
+      queue.dequeue()
+      parent_seq.append(parent_idx)
+      levelorder_seq.append(curr.data)
+      if curr.left is not None:
+        queue.enqueue((curr.left, i))
+      if curr.right is not None:
+        queue.enqueue((curr.right, i))
+      i += 1
+    return parent_seq, levelorder_seq, i
 
+  def load_from_parent_levelorder_seq(self, parent_seq, levelorder_seq, count):
+    assert len(parent_seq) == len(levelorder_seq) == count
+    if count < 1:
+      return
+    nodes = [BinaryTree.Node(levelorder_seq[i]) for i in range(count)]
+    self.root = None
+    for i in range(count):
+      if parent_seq[i] == -1:
+        self.root = nodes[i]
+      else:
+        if nodes[parent_seq[i]].left is None:
+          nodes[parent_seq[i]].left = nodes[i]
+        else:
+          nodes[parent_seq[i]].right = nodes[i]
 
-    
+  def get_levelorder_seq(self) -> list:
+    traversal_result = []
+    self.traversal_levelorder(lambda v: traversal_result.append(v))
+    return traversal_result
+
+  def load_from_cbt_levelorder_seq(self, levelorder_seq, count):
+    assert len(levelorder_seq)  == count
+    if count < 1:
+      return
+    self.root = self.Node(levelorder_seq[0])
+    queue = LinkedQueue()
+    queue.enqueue(self.root)
+    i = 1
+    while not queue.is_empty():
+      curr = queue.front()
+      queue.dequeue()
+      if i < count:
+        curr.left = self.Node(levelorder_seq[i])
+        queue.enqueue(curr.left)
+        i += 1
+      if i < count:
+        curr.right = self.Node(levelorder_seq[i])
+        queue.enqueue(curr.right)
+        i += 1

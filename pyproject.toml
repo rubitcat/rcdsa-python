@@ -10,6 +10,8 @@ authors = [
 ]
 description = "✨yep, a datastruct and algorithm toolkit written in python."
 readme = "README.md"
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
 requires-python = ">=3.8"
 classifiers = [
   "Programming Language :: Python :: 3",
