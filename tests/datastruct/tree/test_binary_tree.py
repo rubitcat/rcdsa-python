@@ -1,6 +1,10 @@
 from rcdsa.datastruct import BinaryTree
 
-
+#       0
+#     /   \
+#    1     2
+#   / \   / \
+#  3  4  5  6
 preorder_list = [0, 1, 3, 4, 2, 5, 6]
 inorder_list = [3, 1, 4, 0, 5, 2, 6]
 postorder_list = [3, 4, 1, 5, 6, 2, 0]
@@ -64,7 +68,6 @@ def test_binary_tree_serialize():
   bt.load_from_parent_levelorder_seq(pindex_list, levelorder_list, len(pindex_list))
   res_preorder = []
   res_inorder = []
-  res_levelorder = []
   bt.traversal_preorder(lambda v: res_preorder.append(v))
   bt.traversal_inorder(lambda v: res_inorder.append(v))
   assert res_preorder == preorder_list

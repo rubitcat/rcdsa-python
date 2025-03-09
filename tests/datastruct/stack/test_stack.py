@@ -12,7 +12,7 @@ def test_array_stack():
     s.pop()
   assert True
 
-def test_array_stack():
+def test_linked_stack():
   n = 10
   s = LinkedStack()
   for i in range(n):

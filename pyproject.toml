@@ -20,7 +20,7 @@ classifiers = [
 
 [project.urls]
 Homepage = "https://rubitcat.cn/docsec/docs/software/datastruct-algorithm/algorithm-overview/"
-Issues = "https://github.com/rubitcat/rcdsa-python"
+Issues = "https://github.com/rubitcat/rcdsa-python/issues"
 
 [tool.pdm]
 version = { source = "file", path = "rcdsa/__init__.py" }

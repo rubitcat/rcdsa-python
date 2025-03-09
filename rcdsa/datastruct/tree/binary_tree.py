@@ -56,6 +56,9 @@ class BinaryTree(Tree):
       if curr.right is not None:
         queue.enqueue(curr.right)
     
+    if target_root is None:
+      return
+
     # find the latest node and it's parent node
     last_node = None
     last_node_parent = None 
@@ -111,21 +114,19 @@ class BinaryTree(Tree):
     if self.root is None:
       return
     stack = LinkedStack()
-    curr = self.root
-    while True:
-      while curr is not None:
-        stack.push(curr)
-        stack.push(curr)
-        curr = curr.left
-      if stack.is_empty():
-        return
+    track_map = {}
+    stack.push(self.root)
+    while not stack.is_empty():
       curr = stack.top()
+      track_map[curr] = True
+      if curr.left is not None and not track_map.get(curr.left):
+        stack.push(curr.left)
+        continue
+      if curr.right is not None and not track_map.get(curr.right):
+        stack.push(curr.right)
+        continue
+      func(curr.data)
       stack.pop()
-      if not stack.is_empty() and stack.top() == curr:
-        curr = curr.right
-      else:
-        func(curr.data)
-        curr = None
 
   def traversal_levelorder(self, func):
     if self.root is None:
@@ -140,11 +141,10 @@ class BinaryTree(Tree):
       if not curr.right is None:
         queue.enqueue(curr.right)
       func(curr.data)
-
+  
   def clear(self):
-    pass
-
-
+    self.root = None
+    
   def get_parent_levelorder_seq(self) -> tuple[list,list]:
     if self.root is None:
       return [], []
@@ -181,13 +181,13 @@ class BinaryTree(Tree):
           nodes[parent_seq[i]].right = nodes[i]
 
   def get_levelorder_seq(self) -> list:
-    traversal_result = []
-    self.traversal_levelorder(lambda v: traversal_result.append(v))
-    return traversal_result
+    levelorder_seq = []
+    self.traversal_levelorder(lambda v: levelorder_seq.append(v))
+    return levelorder_seq
 
   def load_from_cbt_levelorder_seq(self, levelorder_seq, count):
-    assert len(levelorder_seq)  == count
-    if count < 1:
+    if len(levelorder_seq) == 0:
+      self.root = None
       return
     self.root = self.Node(levelorder_seq[0])
     queue = LinkedQueue()
@@ -204,3 +204,4 @@ class BinaryTree(Tree):
         curr.right = self.Node(levelorder_seq[i])
         queue.enqueue(curr.right)
         i += 1
+
