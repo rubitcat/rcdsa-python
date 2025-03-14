@@ -11,20 +11,21 @@ class BinarySearchTree(BinaryTree):
       return
     # find the leaf node to be inserted
     curr = self.root
-    parent = None
+    curr_parent = None
     while curr is not None:
-      parent = curr
       if self.cmp(data, curr.data) < 0 :
+        curr_parent = curr
         curr = curr.left
       elif self.cmp(data, curr.data) > 0:
+        curr_parent = curr
         curr = curr.right 
       else:
         return
 
-    if self.cmp(data, parent.data) < 0:
-      parent.left = self.Node(data)
-    elif self.cmp(data, parent.data) > 0:
-      parent.right = self.Node(data)
+    if self.cmp(data, curr_parent.data) < 0:
+      curr_parent.left = self.Node(data)
+    elif self.cmp(data, curr_parent.data) > 0:
+      curr_parent.right = self.Node(data)
 
   def delete(self, data):
     if self.root is None:
@@ -33,12 +34,15 @@ class BinarySearchTree(BinaryTree):
     # find the node we want to delete
     curr = self.root
     curr_parent = None
-    while curr is not None and self.cmp(data, curr.data) != 0:
-      curr_parent = curr 
+    while curr is not None:
       if self.cmp(data, curr.data) < 0 :
+        curr_parent = curr 
         curr = curr.left
-      else:
+      elif self.cmp(data, curr.data) >0:
+        curr_parent = curr 
         curr = curr.right
+      else:
+        break
     if curr is None:
       return
     
@@ -46,11 +50,7 @@ class BinarySearchTree(BinaryTree):
     if curr.left is None or curr.right is None:
       # find the curr_parent's new subtree,
       # it must be one of the subtree of the curr
-      new_subtree = None
-      if curr.left is not None:
-        new_subtree = curr.left
-      else:
-        new_subtree = curr.right
+      new_subtree = curr.left if curr.left is not None else curr.right
       
       if curr_parent is None:
         self.root = new_subtree
@@ -65,24 +65,27 @@ class BinarySearchTree(BinaryTree):
       # use successor's right subtree to replace 
       # parent's subtree
       succ = curr.right
-      succ_parent = None
+      succ_parent = curr
       while succ.left is not None:
         succ_parent = succ
         succ = succ.left
       curr.data = succ.data
 
-      if succ_parent is not None:
-        succ_parent.left = succ.right
+      if succ_parent == curr:
+        succ_parent.right = succ.right
       else:
-        curr.right = succ.right
+        succ_parent.left = succ.right
 
   def search(self, data):
     curr = self.root
-    while curr is not None and self.cmp(data, curr.data) != 0:
+    while curr is not None:
       if self.cmp(data, curr.data) < 0:
         curr = curr.left
-      else:
+      elif self.cmp(data, curr.data) > 0:
         curr = curr.right
+      else:
+        break
+      
     if curr is not None:
       return data
     else:

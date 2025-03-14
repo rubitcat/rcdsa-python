@@ -7,3 +7,4 @@ from .queue.linked_queue import LinkedQueue
 from .tree.tree import Tree
 from .tree.binary_tree import BinaryTree
 from .tree.binary_search_tree import BinarySearchTree
+from .tree.avl_tree import AVLTree

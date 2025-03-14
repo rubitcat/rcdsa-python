@@ -4,10 +4,12 @@ from rcdsa.datastruct import LinkedQueue
 
 class BinaryTree(Tree):
   class Node:
-    def  __init__(self, data=None, left=None, right=None):
+    def __init__(self, data=None, left=None, right=None, parent=None, **attributes):
       self.data  = data
+      self.parent = parent
       self.left  = left
       self.right = right
+      self.attrs = attributes
 
   def __init__(self):
     self.root = None
