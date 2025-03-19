@@ -45,36 +45,25 @@ class BinarySearchTree(BinaryTree):
         break
     if curr is None:
       return
-    
-    # check the subtree number of curr node  
-    if curr.left is None or curr.right is None:
-      # find the curr_parent's new subtree,
-      # it must be one of the subtree of the curr
-      new_subtree = curr.left if curr.left is not None else curr.right
-      
-      if curr_parent is None:
-        self.root = new_subtree
-      else:
-        if curr_parent.left == curr:
-          curr_parent.left = new_subtree
-        else:
-          curr_parent.right = new_subtree
-    else:
-      # find the curr's inorder succ,  
-      # use it's data to overwirte curr's data
-      # use successor's right subtree to replace 
-      # parent's subtree
-      succ = curr.right
-      succ_parent = curr
-      while succ.left is not None:
-        succ_parent = succ
-        succ = succ.left
-      curr.data = succ.data
 
-      if succ_parent == curr:
-        succ_parent.right = succ.right
+    if curr.left is not None and curr.right is not None:
+      temp = curr
+      curr_parent = curr
+      curr = curr.right
+      while curr.left is not None:
+        curr_parent = curr
+        curr = curr.left
+      temp.data = curr.data
+    
+    # delete the node
+    curr_succ = curr.left if curr.left is not None else curr.right
+    if curr_parent is None:
+      self.root = curr_succ
+    else:
+      if curr_parent.left == curr:
+        curr_parent.left = curr_succ
       else:
-        succ_parent.left = succ.right
+        curr_parent.right = curr_succ
 
   def search(self, data):
     curr = self.root

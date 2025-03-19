@@ -12,6 +12,12 @@ class AVLTree(BinarySearchTree):
       return 0
     return node.attrs.get("height")
 
+  # util for setting tree height from attribute
+  def _set_height(self, node, height):
+    if node is None:
+      return
+    node.attrs["height"] = height
+
   # util for getting tree balance factor
   def _get_balance(self, node):
     if node is None:
@@ -20,25 +26,33 @@ class AVLTree(BinarySearchTree):
 
   # reduce right subtree's height by 1 while keeping bst attr
   def _left_rotate(self, node):
-    new_subtree = node.right
-    node.right = new_subtree.left
-    new_subtree.left = node
-    node.attrs["height"] = 1 + \
-      max(self._get_height(node.left), self._get_height(node.right))
-    new_subtree.attrs["height"] = 1 + \
-      max(self._get_height(new_subtree.left), self._get_height(new_subtree.right))
-    return new_subtree
+    new_tree = node.right
+    node.right = new_tree.left
+    new_tree.left = node
+    self._set_height(
+      node, 
+      1 + max(self._get_height(node.left), self._get_height(node.right))
+    )
+    self._set_height(
+      new_tree, 
+      1 + max(self._get_height(new_tree.left), self._get_height(new_tree.right))
+    )
+    return new_tree
 
   # reduce left subtree's height by 1 while keeping bst attr
   def _right_rotate(self, node):
-    new_subtree = node.left
-    node.left = new_subtree.right
-    new_subtree.right = node
-    node.attrs["height"] = 1 + \
-      max(self._get_height(node.left), self._get_height(node.right))
-    new_subtree.attrs["height"] = 1 + \
-      max(self._get_height(new_subtree.left), self._get_height(new_subtree.right))
-    return new_subtree
+    new_tree = node.left
+    node.left = new_tree.right
+    new_tree.right = node
+    self._set_height(
+      node, 
+      1 + max(self._get_height(node.left), self._get_height(node.right))
+    )
+    self._set_height(
+      new_tree, 
+      1 + max(self._get_height(new_tree.left), self._get_height(new_tree.right))
+    )
+    return new_tree
 
   def insert(self, data):
     if self.root is None:
@@ -70,8 +84,10 @@ class AVLTree(BinarySearchTree):
       curr = stack.top()
       stack.pop()
       curr_parent = stack.top() if not stack.is_empty() else None
-      curr.attrs['height'] = 1 + \
-        max(self._get_height(curr.left), self._get_height(curr.right))
+      self._set_height(
+        curr, 
+        1 + max(self._get_height(curr.left), self._get_height(curr.right))
+      )
       curr_balance = self._get_balance(curr)
 
       new_subtree = None
@@ -114,46 +130,36 @@ class AVLTree(BinarySearchTree):
         break
     if curr is None:
       return
-    curr_parent = stack.top() if not stack.is_empty() else None
 
-    # check the subtree number of curr node  
-    if curr.left is None or curr.right is None:
-      # find the curr_parent's new subtree,
-      # it must be one of the subtree of the curr
-      new_subtree = curr.left if curr.left is not None else curr.right
-      
-      if curr_parent is None:
-        self.root = new_subtree
-      else:
-        if curr_parent.left == curr:
-          curr_parent.left = new_subtree
-        else:
-          curr_parent.right = new_subtree
-    else:
-      # find the curr's inorder succ,  
-      # use it's data to overwirte curr's data
-      # use successor's right subtree to replace 
-      # parent's subtree
-      succ = curr.right
+    if curr.left is not None and curr.right is not None:
+      temp = curr
       stack.push(curr)
-      while succ.left is not None:
-        stack.push(succ)
-        succ = succ.left
-      succ_parent = stack.top()
-      curr.data = succ.data
-
-      if succ_parent == curr:
-        succ_parent.right = succ.right
+      curr = curr.right
+      while curr.left is not None:
+        stack.push(curr)
+        curr = curr.left
+      temp.data = curr.data
+    
+    # delete the node
+    curr_parent = stack.top() if not stack.is_empty() else None
+    curr_succ = curr.left if curr.left is not None else curr.right
+    if curr_parent is None:
+      self.root = curr_succ
+    else:
+      if curr_parent.left == curr:
+        curr_parent.left = curr_succ
       else:
-        succ_parent.left = succ.right
+        curr_parent.right = curr_succ
     
     # rebalance tree
     while not stack.is_empty():
       curr = stack.top()
       stack.pop()
       curr_parent = stack.top() if not stack.is_empty() else None
-      curr.attrs['height'] = 1 + \
-        max(self._get_height(curr.left), self._get_height(curr.right))
+      self._set_height(
+        curr, 
+        1 + max(self._get_height(curr.left), self._get_height(curr.right))
+      )
       curr_balance = self._get_balance(curr)
 
       new_subtree = None
