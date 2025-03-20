@@ -24,17 +24,17 @@ class RedBlackTree(BinarySearchTree):
 
   # reduce right subtree's height by 1 while keeping bst attr
   def _left_rotate(self, node):
-    new_subtree = node.right
-    node.right = new_subtree.left
-    new_subtree.left = node
-    return new_subtree
+    new_tree = node.right
+    node.right = new_tree.left
+    new_tree.left = node
+    return new_tree
 
   # reduce left subtree's height by 1 while keeping bst attr
   def _right_rotate(self, node):
-    new_subtree = node.left
-    node.left = new_subtree.right
-    new_subtree.right = node
-    return new_subtree
+    new_tree = node.left
+    node.left = new_tree.right
+    new_tree.right = node
+    return new_tree
 
   def insert(self, data):
     if self.root is None:
@@ -61,76 +61,74 @@ class RedBlackTree(BinarySearchTree):
       curr_parent.right = self.Node(data, color=self.Color.RED)
 
     # rebalance tree
-    while not stack.is_empty():
+    red_violations = self._get_color(curr_parent) == self.Color.RED
+    while red_violations and not stack.is_empty():
       curr = stack.top()
       stack.pop()
       if not stack.is_empty():
         curr_parent = stack.top()
         stack.pop()
       else:
-        curr_parent = None
+        break
       curr_grandparent = stack.top() if not stack.is_empty() else None 
+      curr_grandparent_succ = None
 
-      # handle red-red violations
-      red_violations = False  
       layout_state = 0 # bit 0 -> left, bit 1 -> right 
-      curr_brother = None 
-      if self._get_color(curr) == self.Color.RED:
-        if self._get_color(curr.left) == self.Color.RED:
-          red_violations = True
-          layout_state &= 0xe
-        if self._get_color(curr.right) == self.Color.RED:
-          red_violations = True
-          layout_state |= 0x1
-
-        if red_violations and curr == curr_parent.left:
-          layout_state &= 0xd
-          curr_brother = curr_parent.right
-        if red_violations and curr == curr_parent.right:
-          layout_state |= 0x2
-          curr_brother = curr_parent.left
+      curr_sibling = None 
+      if curr == curr_parent.left:
+        layout_state &= 0xd
+        curr_sibling = curr_parent.right
+      if curr == curr_parent.right:
+        layout_state |= 0x2
+        curr_sibling = curr_parent.left
       
-      if red_violations:
-        if self._get_color(curr_brother) == self.Color.RED:
-          if curr_parent != self.root:
-            self._set_color(curr_parent, self.Color.RED)
-          self._set_color(curr, self.Color.BLACK)
-          self._set_color(curr_brother, self.Color.BLACK)
-          continue
-        
-        new_subtree = None
-        if layout_state == 0:
-          # LL case
-          self._set_color(curr, self.Color.BLACK)
+      # sibling red case
+      if self._get_color(curr_sibling) == self.Color.RED:
+        self._set_color(curr, self.Color.BLACK)
+        self._set_color(curr_sibling, self.Color.BLACK)          
+        if curr_parent != self.root:
           self._set_color(curr_parent, self.Color.RED)
-          new_subtree = self._right_rotate(curr_parent)
-        elif layout_state == 1:
-          # LR case
-          self._set_color(curr.right, self.Color.BLACK)
-          self._set_color(curr_parent, self.Color.RED)
-          curr_parent.left = self._left_rotate(curr)
-          new_subtree = self._right_rotate(curr_parent)
-        elif layout_state == 2:
-          # RL case
-          self._set_color(curr.left, self.Color.BLACK)
-          self._set_color(curr_parent, self.Color.RED)
-          curr_parent.right = self._right_rotate(curr)
-          new_subtree = self._left_rotate(curr_parent)
-        elif layout_state == 3:
-          # RR case
-          self._set_color(curr, self.Color.BLACK)
-          self._set_color(curr_parent, self.Color.RED)
-          new_subtree = self._left_rotate(curr_parent)
+          if self._get_color(curr_grandparent) == self.Color.RED:
+            continue
+        break
 
-        if curr_grandparent is None:
-          self.root = new_subtree
+      # sibling black case
+      if self._get_color(curr.left) == self.Color.RED:
+        layout_state &= 0xe
+      if self._get_color(curr.right) == self.Color.RED:
+        layout_state |= 0x1
+
+      if layout_state == 0:
+        # LL case
+        self._set_color(curr, self.Color.BLACK)
+        self._set_color(curr_parent, self.Color.RED)
+        curr_grandparent_succ = self._right_rotate(curr_parent)
+      elif layout_state == 1:
+        # LR case
+        self._set_color(curr.right, self.Color.BLACK)
+        self._set_color(curr_parent, self.Color.RED)
+        curr_parent.left = self._left_rotate(curr)
+        curr_grandparent_succ = self._right_rotate(curr_parent)
+      elif layout_state == 2:
+        # RL case
+        self._set_color(curr.left, self.Color.BLACK)
+        self._set_color(curr_parent, self.Color.RED)
+        curr_parent.right = self._right_rotate(curr)
+        curr_grandparent_succ = self._left_rotate(curr_parent)
+      elif layout_state == 3:
+        # RR case
+        self._set_color(curr, self.Color.BLACK)
+        self._set_color(curr_parent, self.Color.RED)
+        curr_grandparent_succ = self._left_rotate(curr_parent)
+
+      if curr_grandparent is None:
+        self.root = curr_grandparent_succ
+      else:
+        if curr_parent == curr_grandparent.left:
+          curr_grandparent.left = curr_grandparent_succ
         else:
-          if curr_parent == curr_grandparent.left:
-            curr_grandparent.left = new_subtree
-          else:
-            curr_grandparent.right = new_subtree
+          curr_grandparent.right = curr_grandparent_succ
 
-      # conflict fixed and quit
       break
     
   def delete(self, data):
@@ -165,12 +163,15 @@ class RedBlackTree(BinarySearchTree):
     curr_parent = stack.top() if not stack.is_empty() else None
     curr_succ = curr.left if curr.left is not None else curr.right
     black_violations = self._get_color(curr) == self._get_color(curr_succ) == self.Color.BLACK
+    stack.push(curr)
     
+    # reblance tree
+    # simple case
     if not black_violations and curr_succ is not None:
       curr_succ.attrs["color"] = self.Color.BLACK
-
-    stack.push(curr)
-    while black_violations:
+    
+    # double black case
+    while black_violations and not stack.is_empty():
       doblk = stack.top()
       stack.pop()
       if not stack.is_empty():

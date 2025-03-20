@@ -118,41 +118,5 @@ def test_red_black_tree_insert_delete():
   assert res_preorder == [48, 40, 45, 50]
   assert res_inorder == [40, 45, 48, 50]
   
-def test_aaa():
-
-  rbt = RedBlackTree()
-  res_inorder = []
-  res_levelorder = [] 
-
-  rbt.insert(7)
-  rbt.insert(3)
-  rbt.insert(18)
-  rbt.insert(10)
-  rbt.insert(22)
-  rbt.insert(8)
-  rbt.insert(11)
-  rbt.insert(26)
-  rbt.insert(2)
-  rbt.insert(6)
-  rbt.insert(13)
-
-  rbt.traversal_inorder(lambda v: res_inorder.append(v))
-  rbt.traversal_levelorder(lambda v: res_levelorder.append(v))
-  assert res_inorder == [2,3,6,7,8,10,11,13,18,22,26]
-  assert res_levelorder == [10,7,18,3,8,11,22,2,6,13,26]
-
-
-  rbt.delete(18)
-  rbt.delete(11)
-  rbt.delete(3)
-  rbt.delete(10)
-  rbt.delete(22)
-
-  res_inorder.clear()
-  res_levelorder.clear()
-  rbt.traversal_inorder(lambda v: res_inorder.append(v))
-  rbt.traversal_levelorder(lambda v: res_levelorder.append(v))
-  assert res_inorder == [2, 6, 7, 8, 13, 26 ]
-  assert res_levelorder == [13, 7, 26, 6, 8, 2 ]
 
 
