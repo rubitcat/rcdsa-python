@@ -9,3 +9,4 @@ from .tree.binary_tree import BinaryTree
 from .tree.binary_search_tree import BinarySearchTree
 from .tree.avl_tree import AVLTree
 from .tree.red_black_tree import RedBlackTree
+from .tree.heap import Heap
