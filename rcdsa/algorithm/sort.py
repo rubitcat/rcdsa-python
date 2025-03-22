@@ -17,7 +17,7 @@ def selection_sort(arr, cmp=_cmp):
   for i in range(len(arr)-1):
     mxx = i
     for j in range(i+1, len(arr)):
-      if cmp(arr[j], arr[mxx]) < 0:
+      if cmp(arr[mxx], arr[j]) > 0:
         mxx = j
     if mxx != i:
       arr[i], arr[mxx] = arr[mxx], arr[i]
@@ -46,7 +46,7 @@ def insertion_sort(arr, cmp=_cmp):
   for i in range(1, len(arr)):
     key = arr[i]
     j = i-1
-    while j >= 0 and cmp(key, arr[j]) < 0:
+    while j >= 0 and cmp(arr[j], key) > 0:
       arr[j + 1] = arr[j]
       j -= 1
     arr[j + 1] = key
@@ -75,7 +75,7 @@ def quick_sort(arr, start=None, end=None, cmp=_cmp):
     pivot = arr[param.high]
     i = param.low - 1
     for j in range(param.low, param.high):
-      if cmp(arr[j], pivot) < 0:
+      if cmp(pivot, arr[j]) > 0:
         i = i + 1
         arr[i], arr[j] = arr[j], arr[i]
     arr[i + 1], arr[param.high] = arr[param.high], arr[i + 1]
