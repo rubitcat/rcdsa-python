@@ -1,4 +1,3 @@
-from rcdsa.datastruct import LinkedQueue
 
 class Heap:
   
@@ -6,7 +5,7 @@ class Heap:
     self.cmp = cmp
     self.capacity = capacity
     self.heap = [None] * capacity
-    self.size = 0 
+    self.size = 0
   
   def is_empty(self):
     return self.size == 0
@@ -42,23 +41,23 @@ class Heap:
   @classmethod
   def heappop(cls, heap, size, cmp=lambda x, y: (x.__gt__(y)) - (x.__lt__(y))):
     last = size - 1
-    curr = 0 
-    mxx = 1
-    while curr*2+1 < size:
-      if cmp(heap[mxx+1], heap[mxx]) > 0:
-         mxx += 1
-      if cmp(heap[last], heap[mxx]) > 0:
-        break
-      heap[curr] = heap[mxx]
-      curr = mxx
-      mxx = mxx*2+1
-    heap[curr] = heap[last]
+    heap[0] = heap[last]
+    heap[last] = None
+    cls.heapify(heap, size-1, 0, cmp)
+
 
   @classmethod
-  def heapfify(cls, arr, size, cmp=lambda x, y: (x.__gt__(y)) - (x.__lt__(y))):
-    pass
-
-
-
-
-
+  def heapify(cls, arr, size, start, cmp=lambda x, y: (x.__gt__(y)) - (x.__lt__(y))):
+    top = arr[start]
+    curr = start
+    mxx = start*2+1
+    while mxx < size:
+      if mxx+1 < size and cmp(arr[mxx+1], arr[mxx]) > 0:
+         mxx += 1
+      if cmp(top, arr[mxx]) > 0:
+        break
+      arr[curr] = arr[mxx]
+      curr = mxx
+      mxx = mxx*2+1
+    if curr != start:
+      arr[curr] = top
