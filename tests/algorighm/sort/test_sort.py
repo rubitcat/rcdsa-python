@@ -30,4 +30,6 @@ def test_heap_sort():
   
 
 def test_merge_sort():
-  pass
+  arr = [12, 11, 13, 5, 6, 7]
+  sort.merge_sort(arr)
+  assert arr == [5, 6, 7, 11, 12, 13]
