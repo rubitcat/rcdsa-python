@@ -2,9 +2,9 @@ from rcdsa.datastruct import LinkedStack
 from rcdsa.datastruct import Heap
 
 def _cmp(x, y):
-  if x > y:
+  if x.__gt__(y):
     return 1
-  elif x < y:
+  elif x.__lt__(y):
     return -1
   else:
     return 0
