@@ -121,13 +121,7 @@ class RedBlackTree(BinarySearchTree):
         self._set_color(curr_parent, self.Color.RED)
         curr_grandparent_succ = self._left_rotate(curr_parent)
 
-      if curr_grandparent is None:
-        self.root = curr_grandparent_succ
-      else:
-        if curr_parent == curr_grandparent.left:
-          curr_grandparent.left = curr_grandparent_succ
-        else:
-          curr_grandparent.right = curr_grandparent_succ
+      self._transplant(curr_grandparent, curr_parent, curr_grandparent_succ)
 
       break
     
@@ -160,15 +154,15 @@ class RedBlackTree(BinarySearchTree):
       temp.data = curr.data
     
     
+    # rebalance tree, the node will be deleted later 
     curr_parent = stack.top() if not stack.is_empty() else None
     curr_succ = curr.left if curr.left is not None else curr.right
     black_violations = self._get_color(curr) == self._get_color(curr_succ) == self.Color.BLACK
     stack.push(curr)
     
-    # reblance tree
-    # simple case
+    ## simple case
     if not black_violations and curr_succ is not None:
-      curr_succ.attrs["color"] = self.Color.BLACK
+      self._set_color(curr_succ, self.Color.BLACK)
     
     # double black case
     while black_violations and not stack.is_empty():
@@ -243,26 +237,26 @@ class RedBlackTree(BinarySearchTree):
         else:
           layout_state |= 0x1
         
-      # LL case
       if layout_state == 0:
+        # LL case
         self._set_color(doblk_sibling, self._get_color(doblk_parent))
         self._set_color(doblk_parent, self.Color.BLACK)
         self._set_color(doblk_sibling.left, self.Color.BLACK)
         doblk_grandparent_succ = self._right_rotate(doblk_parent)
-      # LR case
       elif layout_state == 1:
+        # LR case
         self._set_color(doblk_sibling, self.Color.RED)
         self._set_color(doblk_sibling.right, self.Color.BLACK)
         doblk_parent.left = self._left_rotate(doblk_parent.left)
         doblk_grandparent_succ = self._right_rotate(doblk_parent)
-      # RL case
       elif layout_state == 2:
+        # RL case
         self._set_color(doblk_sibling, self.Color.RED)
         self._set_color(doblk_sibling.left, self.Color.BLACK)
         doblk_parent.right = self._right_rotate(doblk_parent.right)
         doblk_grandparent_succ = self._left_rotate(doblk_parent)
-      # RR case
       elif layout_state == 3:
+        # RR case
         self._set_color(doblk_sibling, self._get_color(doblk_parent))
         self._set_color(doblk_parent, self.Color.BLACK)
         self._set_color(doblk_sibling.right, self.Color.BLACK)
@@ -279,10 +273,4 @@ class RedBlackTree(BinarySearchTree):
       break
 
     # delete the node
-    if curr_parent is None:
-      self.root = curr_succ
-    else:
-      if curr_parent.left == curr:
-        curr_parent.left = curr_succ
-      else:
-        curr_parent.right = curr_succ
+    self._transplant(curr_parent, curr, curr_succ)

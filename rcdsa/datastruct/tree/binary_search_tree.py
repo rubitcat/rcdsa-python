@@ -5,6 +5,15 @@ class BinarySearchTree(BinaryTree):
     super().__init__()
     self.cmp = cmp
 
+  # util for replace u with v
+  def _transplant(self, p, u, v):
+    if p is None:
+      self.root = v
+    elif u == p.left:
+      p.left = v
+    elif u == p.right:
+      p.right = v
+
   def insert(self, data):
     if self.root is None:
       self.root = self.Node(data)
@@ -57,13 +66,7 @@ class BinarySearchTree(BinaryTree):
     
     # delete the node
     curr_succ = curr.left if curr.left is not None else curr.right
-    if curr_parent is None:
-      self.root = curr_succ
-    else:
-      if curr_parent.left == curr:
-        curr_parent.left = curr_succ
-      else:
-        curr_parent.right = curr_succ
+    self._transplant(curr_parent, curr, curr_succ)
 
   def search(self, data):
     curr = self.root

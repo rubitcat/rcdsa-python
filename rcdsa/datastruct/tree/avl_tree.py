@@ -143,13 +143,7 @@ class AVLTree(BinarySearchTree):
     # delete the node
     curr_parent = stack.top() if not stack.is_empty() else None
     curr_succ = curr.left if curr.left is not None else curr.right
-    if curr_parent is None:
-      self.root = curr_succ
-    else:
-      if curr_parent.left == curr:
-        curr_parent.left = curr_succ
-      else:
-        curr_parent.right = curr_succ
+    self._transplant(curr_parent, curr, curr_succ)
     
     # rebalance tree
     while not stack.is_empty():
@@ -175,11 +169,5 @@ class AVLTree(BinarySearchTree):
         new_subtree = self._left_rotate(curr)
 
       if new_subtree is not None:
-        if curr_parent is None:
-          self.root = new_subtree
-        else:
-          if curr_parent.left == curr:
-            curr_parent.left = new_subtree
-          else:
-            curr_parent.right = new_subtree
+        self._transplant(curr_parent, curr, new_subtree)
         # we can't break here, all the ancestors should be fixed.
