@@ -261,15 +261,8 @@ class RedBlackTree(BinarySearchTree):
         self._set_color(doblk_parent, self.Color.BLACK)
         self._set_color(doblk_sibling.right, self.Color.BLACK)
         doblk_grandparent_succ = self._left_rotate(doblk_parent)
-        
-      if doblk_grandparent is None:
-        self.root = doblk_grandparent_succ
-      else:
-        if doblk_grandparent.left == doblk_parent:
-          doblk_grandparent.left = doblk_grandparent_succ
-        else:
-          doblk_grandparent.right = doblk_grandparent_succ
       
+      self._transplant(doblk_grandparent, doblk_parent, doblk_grandparent_succ)
       break
 
     # delete the node

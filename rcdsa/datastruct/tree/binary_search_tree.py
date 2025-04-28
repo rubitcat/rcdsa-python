@@ -78,8 +78,5 @@ class BinarySearchTree(BinaryTree):
       else:
         break
       
-    if curr is not None:
-      return data
-    else:
-      return None
+    return curr.data if curr is not None else None
     

@@ -15,7 +15,7 @@ class BinaryTree(Tree):
     self.root = None
 
   def is_empty(self):
-    return self.root is None;
+    return self.root is None
 
   def insert(self, data=None):
     node = self.Node(data)
