@@ -70,7 +70,7 @@ class AVLTree(BinarySearchTree):
         stack.push(curr)
         curr = curr.right 
       else:
-        return
+        return curr.data
     curr_parent = stack.top()
 
     # insert data
@@ -144,6 +144,7 @@ class AVLTree(BinarySearchTree):
     curr_parent = stack.top() if not stack.is_empty() else None
     curr_succ = curr.left if curr.left is not None else curr.right
     self._transplant(curr_parent, curr, curr_succ)
+    result = curr.data
     
     # rebalance tree
     while not stack.is_empty():
@@ -171,3 +172,5 @@ class AVLTree(BinarySearchTree):
       if new_subtree is not None:
         self._transplant(curr_parent, curr, new_subtree)
         # we can't break here, all the ancestors should be fixed.
+
+    return result

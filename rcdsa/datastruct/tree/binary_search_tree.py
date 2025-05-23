@@ -29,7 +29,7 @@ class BinarySearchTree(BinaryTree):
         curr_parent = curr
         curr = curr.right 
       else:
-        return
+        return curr.data
 
     if self.cmp(data, curr_parent.data) < 0:
       curr_parent.left = self.Node(data)
@@ -67,6 +67,7 @@ class BinarySearchTree(BinaryTree):
     # delete the node
     curr_succ = curr.left if curr.left is not None else curr.right
     self._transplant(curr_parent, curr, curr_succ)
+    return curr.data
 
   def search(self, data):
     curr = self.root

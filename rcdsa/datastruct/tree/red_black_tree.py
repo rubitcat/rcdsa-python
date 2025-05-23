@@ -52,7 +52,7 @@ class RedBlackTree(BinarySearchTree):
         stack.push(curr)
         curr = curr.right 
       else:
-        return
+        return curr.data
     curr_parent = stack.top()
 
     if self.cmp(data, curr_parent.data) < 0:
@@ -267,3 +267,4 @@ class RedBlackTree(BinarySearchTree):
 
     # delete the node
     self._transplant(curr_parent, curr, curr_succ)
+    return curr.data
