@@ -3,8 +3,8 @@ from rcdsa.datastruct import LinkedStack
 
 class AVLTree(BinarySearchTree):
   
-  def __init__(self, cmp=lambda x, y: (x.__gt__(y)) - (x.__lt__(y))):
-    super().__init__(cmp)
+  def __init__(self, cmp=BinarySearchTree.default_cmp, tbo=BinarySearchTree.default_tie_break_order):
+    super().__init__(cmp, tbo)
   
   # util for getting tree height from attribute
   def _get_height(self, node):
@@ -24,11 +24,15 @@ class AVLTree(BinarySearchTree):
       return 0
     return self._get_height(node.left) - self._get_height(node.right)
 
-  # reduce right subtree's height by 1 while keeping bst attr
+  # util for reduce right subtree's height by 1 while keeping bst attr
   def _left_rotate(self, node):
     new_tree = node.right
     node.right = new_tree.left
     new_tree.left = node
+    new_tree.parent = node.parent
+    node.parent = new_tree
+    if node.right is not None:
+      node.right.parent = node
     self._set_height(
       node, 
       1 + max(self._get_height(node.left), self._get_height(node.right))
@@ -39,11 +43,15 @@ class AVLTree(BinarySearchTree):
     )
     return new_tree
 
-  # reduce left subtree's height by 1 while keeping bst attr
+  # util for reduce left subtree's height by 1 while keeping bst attr
   def _right_rotate(self, node):
     new_tree = node.left
     node.left = new_tree.right
     new_tree.right = node
+    new_tree.parent = node.parent
+    node.parent = new_tree
+    if node.left is not None:
+      node.left.parent = node
     self._set_height(
       node, 
       1 + max(self._get_height(node.left), self._get_height(node.right))
@@ -54,36 +62,15 @@ class AVLTree(BinarySearchTree):
     )
     return new_tree
 
-  def insert(self, data):
-    if self.root is None:
-      self.root = self.Node(data, height=1)
-      return
-
-    # find the leaf node to be inserted
-    curr = self.root
-    stack = LinkedStack()
-    while curr is not None:
-      if self.cmp(data, curr.data) < 0 :
-        stack.push(curr)
-        curr = curr.left
-      elif self.cmp(data, curr.data) > 0:
-        stack.push(curr)
-        curr = curr.right 
-      else:
-        return curr.data
-    curr_parent = stack.top()
-
-    # insert data
-    if self.cmp(data, curr_parent.data) < 0:
-      curr_parent.left = self.Node(data, height=1)
-    elif self.cmp(data, curr_parent.data) > 0:
-      curr_parent.right = self.Node(data, height=1)
+  def _insert(self, data):
+    node = super()._insert(data)
+    self._set_height(node, 1)
 
     # rebalance tree
-    while not stack.is_empty():
-      curr = stack.top()
-      stack.pop()
-      curr_parent = stack.top() if not stack.is_empty() else None
+    curr = node
+    while curr.parent is not None:
+      curr = curr.parent
+      curr_parent = curr.parent if curr.parent is not None else None
       self._set_height(
         curr, 
         1 + max(self._get_height(curr.left), self._get_height(curr.right))
@@ -103,54 +90,18 @@ class AVLTree(BinarySearchTree):
         new_subtree = self._left_rotate(curr)
 
       if new_subtree is not None:
-        if curr_parent is None:
-          self.root = new_subtree
-        else:
-          if curr_parent.left == curr:
-            curr_parent.left = new_subtree
-          else:
-            curr_parent.right = new_subtree
+        self._transplant(curr_parent, curr, new_subtree)
         break
 
-  def delete(self, data):
-    if self.root is None:
-      return
-    
-    # find the node we want to delete
-    curr = self.root
-    stack = LinkedStack()
-    while curr is not None:
-      if self.cmp(data, curr.data) < 0 :
-        stack.push(curr)
-        curr = curr.left
-      elif self.cmp(data, curr.data) > 0:
-        stack.push(curr)
-        curr = curr.right
-      else:
-        break
-    if curr is None:
-      return
+    return node
 
-    if curr.left is not None and curr.right is not None:
-      temp = curr
-      stack.push(curr)
-      curr = curr.right
-      while curr.left is not None:
-        stack.push(curr)
-        curr = curr.left
-      temp.data = curr.data
-    
-    # delete the node
-    curr_parent = stack.top() if not stack.is_empty() else None
-    curr_succ = curr.left if curr.left is not None else curr.right
-    self._transplant(curr_parent, curr, curr_succ)
-    result = curr.data
-    
+  def _delete(self, data):
+    curr = super()._delete(data)
+
     # rebalance tree
-    while not stack.is_empty():
-      curr = stack.top()
-      stack.pop()
-      curr_parent = stack.top() if not stack.is_empty() else None
+    while curr.parent is not None:
+      curr = curr.parent
+      curr_parent = curr.parent if curr.parent is not None else None
       self._set_height(
         curr, 
         1 + max(self._get_height(curr.left), self._get_height(curr.right))
@@ -172,5 +123,3 @@ class AVLTree(BinarySearchTree):
       if new_subtree is not None:
         self._transplant(curr_parent, curr, new_subtree)
         # we can't break here, all the ancestors should be fixed.
-
-    return result

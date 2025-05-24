@@ -7,8 +7,8 @@ class RedBlackTree(BinarySearchTree):
     RED = 1
     BLACK = 2
 
-  def __init__(self, cmp=lambda x, y: (x.__gt__(y)) - (x.__lt__(y))):
-    super().__init__(cmp)
+  def __init__(self, cmp=BinarySearchTree.default_cmp, tbo=BinarySearchTree.default_tie_break_order):
+    super().__init__(cmp, tbo)
 
   # util for getting node color
   def _get_color(self, node):
@@ -27,6 +27,10 @@ class RedBlackTree(BinarySearchTree):
     new_tree = node.right
     node.right = new_tree.left
     new_tree.left = node
+    new_tree.parent = node.parent
+    node.parent = new_tree
+    if node.right is not None:
+      node.right.parent = node
     return new_tree
 
   # reduce left subtree's height by 1 while keeping bst attr
@@ -34,237 +38,194 @@ class RedBlackTree(BinarySearchTree):
     new_tree = node.left
     node.left = new_tree.right
     new_tree.right = node
+    new_tree.parent = node.parent
+    node.parent = new_tree
+    if node.left is not None:
+      node.left.parent = node
     return new_tree
 
-  def insert(self, data):
-    if self.root is None:
-      self.root = self.Node(data, color=self.Color.BLACK)
-      return
-
-    # find the leaf node to be inserted
-    curr = self.root
-    stack = LinkedStack()
-    while curr is not None:
-      if self.cmp(data, curr.data) < 0 :
-        stack.push(curr)
-        curr = curr.left
-      elif self.cmp(data, curr.data) > 0:
-        stack.push(curr)
-        curr = curr.right 
-      else:
-        return curr.data
-    curr_parent = stack.top()
-
-    if self.cmp(data, curr_parent.data) < 0:
-      curr_parent.left = self.Node(data, color=self.Color.RED)
-    elif self.cmp(data, curr_parent.data) > 0:
-      curr_parent.right = self.Node(data, color=self.Color.RED)
+  def _insert(self, data):
+    node = super()._insert(data)
+    if self.root == node:
+      self._set_color(node, self.Color.BLACK)
+    else: 
+      self._set_color(node, self.Color.RED)
 
     # rebalance tree
+    curr = node
+    curr_parent = curr.parent if curr.parent is not None else None
     red_violations = self._get_color(curr_parent) == self.Color.RED
-    while red_violations and not stack.is_empty():
-      curr = stack.top()
-      stack.pop()
-      if not stack.is_empty():
-        curr_parent = stack.top()
-        stack.pop()
-      else:
-        break
-      curr_grandparent = stack.top() if not stack.is_empty() else None 
-      curr_grandparent_succ = None
+    if red_violations:
+      curr = curr_parent # start from node which is newly inserted
+      while curr is not None and curr.parent is not None:
+        curr_parent = curr.parent
+        curr_grandparent = curr_parent.parent if curr_parent.parent is not None else None 
+        curr_parent_succ = None
 
-      layout_state = 0 # bit 0 -> left, bit 1 -> right 
-      curr_sibling = None 
-      if curr == curr_parent.left:
-        layout_state &= 0xd
-        curr_sibling = curr_parent.right
-      if curr == curr_parent.right:
-        layout_state |= 0x2
-        curr_sibling = curr_parent.left
-      
-      # sibling red case
-      if self._get_color(curr_sibling) == self.Color.RED:
-        self._set_color(curr, self.Color.BLACK)
-        self._set_color(curr_sibling, self.Color.BLACK)          
-        if curr_parent != self.root:
+        # detect curr layout
+        layout_state = 0 # bit 0 -> left, bit 1 -> right 
+        curr_sibling = None 
+        if curr == curr_parent.left:
+          layout_state &= 0xd
+          curr_sibling = curr_parent.right
+        if curr == curr_parent.right:
+          layout_state |= 0x2
+          curr_sibling = curr_parent.left
+        
+        # sibling red case
+        if self._get_color(curr_sibling) == self.Color.RED:
+          self._set_color(curr, self.Color.BLACK)
+          self._set_color(curr_sibling, self.Color.BLACK)          
+          if curr_parent != self.root:
+            self._set_color(curr_parent, self.Color.RED)
+            if self._get_color(curr_grandparent) == self.Color.RED:
+              curr = curr_grandparent
+              continue
+          break
+
+        # sibling black case
+        if self._get_color(curr.left) == self.Color.RED:
+          layout_state &= 0xe
+        if self._get_color(curr.right) == self.Color.RED:
+          layout_state |= 0x1
+
+        if layout_state == 0:
+          # LL case
+          self._set_color(curr, self.Color.BLACK)
           self._set_color(curr_parent, self.Color.RED)
-          if self._get_color(curr_grandparent) == self.Color.RED:
-            continue
+          curr_parent_succ = self._right_rotate(curr_parent)
+        elif layout_state == 1:
+          # LR case
+          self._set_color(curr.right, self.Color.BLACK)
+          self._set_color(curr_parent, self.Color.RED)
+          curr_parent.left = self._left_rotate(curr)
+          curr_parent_succ = self._right_rotate(curr_parent)
+        elif layout_state == 2:
+          # RL case
+          self._set_color(curr.left, self.Color.BLACK)
+          self._set_color(curr_parent, self.Color.RED)
+          curr_parent.right = self._right_rotate(curr)
+          curr_parent_succ = self._left_rotate(curr_parent)
+        elif layout_state == 3:
+          # RR case
+          self._set_color(curr, self.Color.BLACK)
+          self._set_color(curr_parent, self.Color.RED)
+          curr_parent_succ = self._left_rotate(curr_parent)
+
+        self._transplant(curr_grandparent, curr_parent, curr_parent_succ)
         break
 
-      # sibling black case
-      if self._get_color(curr.left) == self.Color.RED:
-        layout_state &= 0xe
-      if self._get_color(curr.right) == self.Color.RED:
-        layout_state |= 0x1
-
-      if layout_state == 0:
-        # LL case
-        self._set_color(curr, self.Color.BLACK)
-        self._set_color(curr_parent, self.Color.RED)
-        curr_grandparent_succ = self._right_rotate(curr_parent)
-      elif layout_state == 1:
-        # LR case
-        self._set_color(curr.right, self.Color.BLACK)
-        self._set_color(curr_parent, self.Color.RED)
-        curr_parent.left = self._left_rotate(curr)
-        curr_grandparent_succ = self._right_rotate(curr_parent)
-      elif layout_state == 2:
-        # RL case
-        self._set_color(curr.left, self.Color.BLACK)
-        self._set_color(curr_parent, self.Color.RED)
-        curr_parent.right = self._right_rotate(curr)
-        curr_grandparent_succ = self._left_rotate(curr_parent)
-      elif layout_state == 3:
-        # RR case
-        self._set_color(curr, self.Color.BLACK)
-        self._set_color(curr_parent, self.Color.RED)
-        curr_grandparent_succ = self._left_rotate(curr_parent)
-
-      self._transplant(curr_grandparent, curr_parent, curr_grandparent_succ)
-
-      break
-    
-  def delete(self, data):
+  def _delete(self, data):
     if self.root is None:
       return
-    
-    # find the node we want to delete
-    curr = self.root
-    stack = LinkedStack()
-    while curr is not None:
-      if self.cmp(data, curr.data) < 0 :
-        stack.push(curr)
-        curr = curr.left
-      elif self.cmp(data, curr.data) > 0:
-        stack.push(curr)
-        curr = curr.right
-      else:
-        break
-    if curr is None:
+    node = self._search(data, self.root)
+    if node is None:
       return
-
-    if curr.left is not None and curr.right is not None:
-      temp = curr
-      stack.push(curr)
-      curr = curr.right
-      while curr.left is not None:
-        stack.push(curr)
-        curr = curr.left
-      temp.data = curr.data
+    target = node
+    if target.left is not None and target.right is not None:
+      temp = target
+      target = target.right
+      while target.left is not None:
+        target = target.left
+      (temp.data, target.data) = (target.data, temp.data)
     
-    
-    # rebalance tree, the node will be deleted later 
-    curr_parent = stack.top() if not stack.is_empty() else None
-    curr_succ = curr.left if curr.left is not None else curr.right
-    black_violations = self._get_color(curr) == self._get_color(curr_succ) == self.Color.BLACK
-    stack.push(curr)
-    
-    ## simple case
-    if not black_violations and curr_succ is not None:
-      self._set_color(curr_succ, self.Color.BLACK)
-    
-    # double black case
-    while black_violations and not stack.is_empty():
-      doblk = stack.top()
-      stack.pop()
-      if not stack.is_empty():
-        doblk_parent = stack.top()
-        stack.pop()
-      else:
-        break
-      doblk_grandparent = stack.top() if not stack.is_empty() else None
+    # rebalance tree, the target node will be deleted later 
+    target_succ = target.left if target.left is not None else target.right
+    black_violations = self._get_color(target) == self._get_color(target_succ) == self.Color.BLACK
+    if not black_violations:
+      # simple case
+      if target_succ is not None:
+        self._set_color(target_succ, self.Color.BLACK)
+    else:
+      # double black case
+      curr = target # start from node which will be delete soon
+      while curr is not None and curr.parent is not None:
+        curr_parent = curr.parent
+        curr_grandparent = curr_parent.parent if curr_parent.parent is not None else None
+        curr_parent_succ = None
 
-      layout_state = 0 # bit 0 -> left, bit 1 -> right 
-      doblk_sibling = None
-      if doblk == doblk_parent.left:
-        layout_state |= 0x2
-        doblk_sibling = doblk_parent.right
-      else:
-        layout_state &= 0xd 
-        doblk_sibling = doblk_parent.left
-      
-      if doblk_sibling is None:
-        stack.push(doblk_parent)
-        continue
-      
-      # sibling red case
-      if self._get_color(doblk_sibling) == self.Color.RED:
-        self._set_color(doblk_sibling, self.Color.BLACK)
-        self._set_color(doblk_parent, self.Color.RED)
-        if layout_state >> 1 == 0:
-          # left case
-          doblk_grandparent_succ = self._right_rotate(doblk_parent)
-          stack.push(doblk_grandparent_succ)
-          stack.push(doblk_grandparent_succ.right)
-          stack.push(doblk)
+        # detect double black layout
+        layout_state = 0 # bit 0 -> left, bit 1 -> right 
+        curr_sibling = None
+        if curr == curr_parent.left:
+          layout_state |= 0x2
+          curr_sibling = curr_parent.right
         else:
-          # right case
-          doblk_grandparent = self._left_rotate(doblk_parent)
-          stack.push(doblk_grandparent_succ)
-          stack.push(doblk_grandparent_succ.left)
-          stack.push(doblk)
-
-        if doblk_grandparent is None:
-          self.root = doblk_grandparent_succ
-        else:
-          if doblk_grandparent.left == doblk_parent:
-            doblk_grandparent.left = doblk_grandparent_succ
-          else:
-            doblk_grandparent.right = doblk_grandparent_succ
-        continue
-      
-      # sibling black black case
-      if self._get_color(doblk_sibling.left) == self.Color.BLACK \
-        and self._get_color(doblk_sibling.right) == self.Color.BLACK:
-        self._set_color(doblk_sibling, self.Color.RED)
-        if self._get_color(doblk_parent) == self.Color.RED:
-          self._set_color(doblk_parent, self.Color.BLACK)
-          break
-        else:
-          stack.push(doblk_parent)
-          continue
-
-      # sibling black red case
-      if layout_state >> 1  == 0:
-        if self._get_color(doblk_sibling.left) == self.Color.BLACK:
-          layout_state |= 0x1
-        else:
-          layout_state &= 0xe
-      else:
-        if self._get_color(doblk_sibling.right) == self.Color.BLACK:
-          layout_state &= 0xe
-        else:
-          layout_state |= 0x1
+          layout_state &= 0xd 
+          curr_sibling = curr_parent.left
         
-      if layout_state == 0:
-        # LL case
-        self._set_color(doblk_sibling, self._get_color(doblk_parent))
-        self._set_color(doblk_parent, self.Color.BLACK)
-        self._set_color(doblk_sibling.left, self.Color.BLACK)
-        doblk_grandparent_succ = self._right_rotate(doblk_parent)
-      elif layout_state == 1:
-        # LR case
-        self._set_color(doblk_sibling, self.Color.RED)
-        self._set_color(doblk_sibling.right, self.Color.BLACK)
-        doblk_parent.left = self._left_rotate(doblk_parent.left)
-        doblk_grandparent_succ = self._right_rotate(doblk_parent)
-      elif layout_state == 2:
-        # RL case
-        self._set_color(doblk_sibling, self.Color.RED)
-        self._set_color(doblk_sibling.left, self.Color.BLACK)
-        doblk_parent.right = self._right_rotate(doblk_parent.right)
-        doblk_grandparent_succ = self._left_rotate(doblk_parent)
-      elif layout_state == 3:
-        # RR case
-        self._set_color(doblk_sibling, self._get_color(doblk_parent))
-        self._set_color(doblk_parent, self.Color.BLACK)
-        self._set_color(doblk_sibling.right, self.Color.BLACK)
-        doblk_grandparent_succ = self._left_rotate(doblk_parent)
-      
-      self._transplant(doblk_grandparent, doblk_parent, doblk_grandparent_succ)
-      break
+        if curr_sibling is None:
+          curr = curr_parent
+          continue
+        
+        # sibling red case
+        if self._get_color(curr_sibling) == self.Color.RED:
+          self._set_color(curr_sibling, self.Color.BLACK)
+          self._set_color(curr_parent, self.Color.RED)
+          if layout_state >> 1 == 0:
+            # left case
+            curr_parent_succ = self._right_rotate(curr_parent)
+          else:
+            # right case
+            curr_parent_succ = self._left_rotate(curr_parent)
+          self._transplant(curr_grandparent, curr_parent, curr_parent_succ)
+          continue
+        
+        # sibling black black case
+        if self._get_color(curr_sibling.left) == self.Color.BLACK \
+          and self._get_color(curr_sibling.right) == self.Color.BLACK:
+          self._set_color(curr_sibling, self.Color.RED)
+          if self._get_color(curr_parent) == self.Color.RED:
+            self._set_color(curr_parent, self.Color.BLACK)
+            break
+          else:
+            curr = curr_parent
+            continue
+
+        # sibling black red case
+        if layout_state >> 1  == 0:
+          if self._get_color(curr_sibling.left) == self.Color.BLACK:
+            layout_state |= 0x1
+          else:
+            layout_state &= 0xe
+        else:
+          if self._get_color(curr_sibling.right) == self.Color.BLACK:
+            layout_state &= 0xe
+          else:
+            layout_state |= 0x1
+          
+        if layout_state == 0:
+          # LL case
+          self._set_color(curr_sibling, self._get_color(curr_parent))
+          self._set_color(curr_parent, self.Color.BLACK)
+          self._set_color(curr_sibling.left, self.Color.BLACK)
+          curr_parent_succ = self._right_rotate(curr_parent)
+        elif layout_state == 1:
+          # LR case
+          self._set_color(curr_sibling, self.Color.RED)
+          self._set_color(curr_sibling.right, self.Color.BLACK)
+          curr_parent.left = self._left_rotate(curr_parent.left)
+          curr_parent_succ = self._right_rotate(curr_parent)
+        elif layout_state == 2:
+          # RL case
+          self._set_color(curr_sibling, self.Color.RED)
+          self._set_color(curr_sibling.left, self.Color.BLACK)
+          curr_parent.right = self._right_rotate(curr_parent.right)
+          curr_parent_succ = self._left_rotate(curr_parent)
+        elif layout_state == 3:
+          # RR case
+          self._set_color(curr_sibling, self._get_color(curr_parent))
+          self._set_color(curr_parent, self.Color.BLACK)
+          self._set_color(curr_sibling.right, self.Color.BLACK)
+          curr_parent_succ = self._left_rotate(curr_parent)
+        
+        self._transplant(curr_grandparent, curr_parent, curr_parent_succ)
+        break
 
     # delete the node
-    self._transplant(curr_parent, curr, curr_succ)
-    return curr.data
+    self._transplant(
+      target.parent, 
+      target, 
+      target.left if target.left is not None else target.right
+    )
+    return target
