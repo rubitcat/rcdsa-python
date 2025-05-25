@@ -128,6 +128,9 @@ class BinarySearchTree(BinaryTree):
           return node
     return None
 
+  def is_empty(self):
+    return True if self.root is None else False 
+
   def insert(self, data, overwrite=True):
     try:
       self._insert(data)
