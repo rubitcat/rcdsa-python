@@ -123,9 +123,7 @@ class BinarySearchTree(BinaryTree):
         node = self._search(data, root.left)
         if node is not None:
           return node
-        node = self._search(data, root.right)
-        if node is not None:
-          return node
+        root = root.right
     return None
 
   def is_empty(self):

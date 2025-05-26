@@ -138,9 +138,9 @@ class BinaryTree(Tree):
     while not queue.is_empty():
       curr = queue.front()
       queue.dequeue()
-      if not curr.left is None:
+      if curr.left is not None:
         queue.enqueue(curr.left)
-      if not curr.right is None:
+      if curr.right is not None:
         queue.enqueue(curr.right)
       func(curr.data)
   
