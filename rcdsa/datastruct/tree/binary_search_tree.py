@@ -58,6 +58,7 @@ class BinarySearchTree(BinaryTree):
           curr = curr.left
         else:
           node_presented = curr
+          break
       except Exception:
         if not searched:
           searched = True
@@ -134,7 +135,7 @@ class BinarySearchTree(BinaryTree):
       self._insert(data)
     except Exception as e:
       if overwrite:
-        node = e.args
+        node = e.args[0]
         old_data = node.data
         node.data = data
         return old_data

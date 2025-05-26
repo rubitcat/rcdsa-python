@@ -256,4 +256,24 @@ class HashMap:
         self._size -= 1
         return deleted_pair.value
 
-
+  def keys(self):
+    res = [None] * self._size
+    pt = 0
+    for bin in self._table:
+      if bin.data is None:
+        continue
+      elif not bin.treeified:
+        node = bin.data
+        while node is not None:
+          pair = node.data
+          res[pt] = pair.key
+          pt += 1
+          node = node.next
+      else:
+        def _procesor(pair):
+          nonlocal res
+          nonlocal pt
+          res[pt] = pair.key
+          pt += 1
+        bin.data.traversal_preorder(_procesor)
+    return res
