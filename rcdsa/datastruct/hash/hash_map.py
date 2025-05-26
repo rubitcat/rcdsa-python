@@ -1,4 +1,5 @@
 from rcdsa.datastruct import RedBlackTree
+import time
 
 class HashMap:
   class DataBin:
@@ -18,14 +19,23 @@ class HashMap:
       self.value = value
 
   # init hashmap
-  def __init__(self):
-    self._load_factor = 0.75
+  def __init__(self, capacity=16, load_factor=0.75):
+    self._load_factor = load_factor
     self._treeify_threshold = 8
-    self._capacity = 16
-    self._threshold = 12
+    self._capacity = self._table_size_for(capacity)
+    self._threshold = int(self._capacity * self._load_factor)
     self._max_capacity = 1 << 30
     self._size = 0
     self._table = [self.DataBin() for i in range(self._capacity)]
+
+  # util for getting power of 2 size
+  def _table_size_for(self, capacity):
+    if capacity <= 0:
+      return 1
+    power = 1
+    while power < capacity:
+      power <<= 1
+    return power
 
   # util for pre-processing key's hash value
   def _hash(self, key):
@@ -41,7 +51,6 @@ class HashMap:
         rbt.insert(p.data)
         p = p.next
       bin.data = rbt
-
 
   # resize hash table, the size is the power of 2
   def _resize(self):
@@ -160,7 +169,6 @@ class HashMap:
     idp2 = id(pair2.key)
     return 1 if idp1 > idp2 else -1
 
-  
   def put(self, key, value):
     hash = self._hash(key)
     pair = self.KeyPair(key, value, hash)
@@ -200,7 +208,6 @@ class HashMap:
       self._size += 1
       if self._size > self._threshold:
         self._resize()
-        
 
   def get(self, key):
     hash = self._hash(key)
