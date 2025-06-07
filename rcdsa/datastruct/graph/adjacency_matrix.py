@@ -2,7 +2,7 @@ from rcdsa.datastruct import LinkedQueue
 from rcdsa.datastruct import HashSet
 from rcdsa.datastruct import HashTable
 
-class AdjMatrix:
+class Graph:
 
   def __init__(self, directed=True):
     self._vetable = HashTable()
@@ -17,7 +17,7 @@ class AdjMatrix:
     if not self.vertexs.contains(vertex_from) or not self.vertexs.contains(vertex_to):
       raise RuntimeError("Vertex is not exists")
     self._vetable.put(vertex_from, vertex_to, edge, overwrite)
-    if self.directed is False:
+    if self.directed is False and vertex_from is not vertex_to:
       self._vetable.put(vertex_to, vertex_from, edge, overwrite)
     self.edges.put(edge, overwrite)
 
@@ -49,7 +49,7 @@ class AdjMatrix:
         curr = queue.front()
         queue.dequeue()
         callback(curr)
-        adjs = self._vetable.get_row_keys(curr)
+        adjs = self._vetable.get_keys_by_row(curr)
         for adj in adjs:
           if not visited.contains(adj):
             visited.put(adj)

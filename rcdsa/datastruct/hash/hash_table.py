@@ -18,13 +18,13 @@ class HashTable:
       return
     return col_map.get(col)
 
-  def get_row_values(self, row):
+  def get_values_by_row(self, row):
     col_map = self.data.get(row)
     if col_map is None:
       return
     return col_map.values()
   
-  def get_row_keys(self, row):
+  def get_keys_by_row(self, row):
     col_map = self.data.get(row)
     if col_map is None:
       return
@@ -44,10 +44,10 @@ class HashTable:
     for row in rows:
       row.remove(col)
 
-  def rows(self):
+  def get_rows(self):
     return self.data.keys()
   
-  def cols(self):
+  def get_cols(self):
     res = []
     rows = self.data.keys()
     res_set = HashSet()

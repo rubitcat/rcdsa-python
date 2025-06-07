@@ -17,4 +17,4 @@ from .hash.hash_map import HashMap
 from .hash.hash_set import HashSet
 from .hash.hash_table import HashTable
 
-from .graph.adjacency_matrix import AdjMatrix
+from .graph.adjacency_matrix import Graph
