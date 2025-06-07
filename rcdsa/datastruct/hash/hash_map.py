@@ -51,6 +51,7 @@ class HashMap:
         rbt.insert(p.data)
         p = p.next
       bin.data = rbt
+    bin.treeified = True
 
   # resize hash table, the size is the power of 2
   def _resize(self):
@@ -136,7 +137,6 @@ class HashMap:
           new_bin.data = lo_head
           if lo_count > self._treeify_threshold:
             self._treeify(new_bin)
-            new_bin.treeified = True
         if hi_tail is not None:
           new_bin = self._table[i + old_captcity]
           if lo_head is None:
@@ -147,7 +147,6 @@ class HashMap:
           new_bin.data = hi_head
           if hi_count > self._treeify_threshold:
             self._treeify(new_bin)
-            new_bin.treeified = True
 
   # compare tow key
   def _rbtcmp(self, pair1, pair2):
@@ -169,7 +168,23 @@ class HashMap:
     idp2 = id(pair2.key)
     return 1 if idp1 > idp2 else -1
 
-  def put(self, key, value):
+  def traversal_pair(self, callback):
+    for bin in self._table:
+      if bin.data is None:
+        continue
+      elif not bin.treeified:
+        node = bin.data
+        while node is not None:
+          pair = node.data
+          callback(pair)
+          node = node.next
+      else:
+        def _processor(pair):
+          callback(pair)
+        bin.data.traversal_preorder(_processor)
+
+
+  def put(self, key, value, overwrite=True):
     hash = self._hash(key)
     pair = self.KeyPair(key, value, hash)
     bin = self._table[(self._capacity-1) & pair.hash]
@@ -193,7 +208,6 @@ class HashMap:
           node.next = self.Node(pair)
           if count >= self._treeify_threshold-1:
             self._treeify(bin)
-            bin.treeified = True
           break
         node = node.next
         count += 1
@@ -203,7 +217,8 @@ class HashMap:
     
     # overwrite
     if pair_presented is not None:
-      pair_presented.value = value
+      if overwrite:
+        pair_presented.value = value
     else:
       self._size += 1
       if self._size > self._threshold:
@@ -256,24 +271,26 @@ class HashMap:
         self._size -= 1
         return deleted_pair.value
 
+
   def keys(self):
     res = [None] * self._size
     pt = 0
-    for bin in self._table:
-      if bin.data is None:
-        continue
-      elif not bin.treeified:
-        node = bin.data
-        while node is not None:
-          pair = node.data
-          res[pt] = pair.key
-          pt += 1
-          node = node.next
-      else:
-        def _procesor(pair):
-          nonlocal res
-          nonlocal pt
-          res[pt] = pair.key
-          pt += 1
-        bin.data.traversal_preorder(_procesor)
+    def _processor(pair):
+      nonlocal res
+      nonlocal pt
+      res[pt] = pair.key
+      pt += 1 
+    self.traversal_pair(_processor)
     return res
+
+  def values(self):
+    res = [None] * self._size
+    pt = 0
+    def _processor(pair):
+      nonlocal res
+      nonlocal pt
+      res[pt] = pair.value
+      pt += 1 
+    self.traversal_pair(_processor)
+    return res
+    

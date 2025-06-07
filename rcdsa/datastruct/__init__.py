@@ -1,3 +1,5 @@
+from .list.linked_list import LinkedList
+
 from .stack.array_stack import ArrayStack
 from .stack.linked_stack import LinkedStack
 
@@ -11,5 +13,8 @@ from .tree.avl_tree import AVLTree
 from .tree.red_black_tree import RedBlackTree
 from .tree.heap import Heap
 
-from .hash.hash_table import HashTable
 from .hash.hash_map import HashMap
+from .hash.hash_set import HashSet
+from .hash.hash_table import HashTable
+
+from .graph.adjacency_matrix import AdjMatrix
