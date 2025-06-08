@@ -3,20 +3,19 @@ import time
 
 class HashMap:
   class DataBin:
-    def __init__(self, data=None, treeified=False):
-      self.treeified = treeified
+    def __init__(self, data=None):
       self.data = data
 
-  class Node:
-    def __init__(self, data=None, next=None):
-      self.data = data
-      self.next = next
+  class TreeDataBin(DataBin):
+    def __init__(self, data=None):
+      super().__init__(data)
 
-  class KeyPair:
-    def __init__(self, key=None, value=None, hash=None):
+  class Entry:
+    def __init__(self, key=None, value=None, hash=None, next=None):
       self.hash = hash
       self.key = key
       self.value = value
+      self.next = next 
 
   # init hashmap
   def __init__(self, capacity=16, load_factor=0.75):
@@ -26,7 +25,7 @@ class HashMap:
     self._threshold = int(self._capacity * self._load_factor)
     self._max_capacity = 1 << 30
     self._size = 0
-    self._table = [self.DataBin() for i in range(self._capacity)]
+    self._table = None
 
   # util for getting power of 2 size
   def _table_size_for(self, capacity):
@@ -42,255 +41,261 @@ class HashMap:
     h = key.__hash__()
     return h ^ (h >> 16) if h is not None else 0
 
+  def _new_entry(self, key=None, value=None, hash=None, next=None):
+    return self.Entry(key, value, hash, next)
+
   # treeify bin, convert linked list to rbt
-  def _treeify(self, bin):
-    if not bin.treeified:
-      p = bin.data
+  def _treeify(self, table, index):
+    if not isinstance(table[index], self.TreeDataBin):
+      curr = table[index].data
       rbt = RedBlackTree(self._rbtcmp, self._rbttbo)
-      while p is not None:
-        rbt.insert(p.data)
-        p = p.next
-      bin.data = rbt
-    bin.treeified = True
+      table[index] = self.TreeDataBin(rbt)
+      while curr is not None:
+        rbt.insert(curr)
+        curr = curr.next
+
+  def _move_linked_list(self, old_table, old_index, old_capacity, new_table):
+    lo_head = None
+    lo_tail = None
+    hi_head = None
+    hi_tail = None
+    curr_entry = old_table[old_index].data
+    while curr_entry is not None:
+      if (curr_entry.hash & old_capacity) == 0:
+        # lower case
+        if lo_tail is None:
+          lo_head = curr_entry
+        else:
+          lo_tail.next = curr_entry
+        lo_tail = curr_entry
+      else:
+        # higher case
+        if hi_tail is None:
+          hi_head = curr_entry
+        else:
+          hi_tail.next = curr_entry
+        hi_tail = curr_entry
+      curr_entry = curr_entry.next
+    if lo_tail is not None:
+      lo_tail.next = None
+      new_table[old_index].data = lo_head
+    if hi_tail is not None:
+      hi_tail.next = None
+      new_table[old_index + old_capacity].data = hi_head
+
+  def _move_tree(self, old_table, old_index, old_capacity, new_table):
+    lo_head = None
+    lo_tail = None
+    lo_count = 0
+    hi_head = None
+    hi_tail = None
+    hi_count = 0
+    def _processor(entry):
+      # using closure vas
+      nonlocal lo_head
+      nonlocal lo_tail
+      nonlocal lo_count
+      nonlocal hi_head
+      nonlocal hi_tail
+      nonlocal hi_count
+      if (entry.hash & old_capacity) == 0:
+        # lower case
+        if lo_tail is None:
+          lo_head = entry
+        else:
+          lo_tail.next = entry
+        lo_tail = entry
+        lo_count += 1
+      else:
+        # higher case
+        if hi_tail is None:
+          hi_head = entry
+        else:
+          hi_tail.next = entry
+        hi_tail = entry
+        hi_count += 1
+    old_table[old_index].data.traversal_preorder(_processor)
+
+    if lo_tail is not None:
+      if hi_head is None:
+        new_table[old_index] = old_table[old_index]
+        return
+      lo_tail.next = None
+      new_table[old_index].data = lo_head
+      if lo_count > self._treeify_threshold:
+        self._treeify(new_table, old_index)
+    if hi_tail is not None:
+      if lo_head is None:
+        new_table[old_index + old_capacity].data = old_table[old_index].data
+        return
+      hi_tail.next = None
+      new_table[old_index + old_capacity].data = hi_head
+      if hi_count > self._treeify_threshold:
+        self._treeify(new_table, old_index + old_capacity)
 
   # resize hash table, the size is the power of 2
   def _resize(self):
-    old_captcity = self._capacity
+    if self._table is None:
+      self._table = [self.DataBin() for i in range(self._capacity)]
+      return
+    old_capacity = self._capacity
     old_threshold = self._threshold
     old_table = self._table
     self._capacity = self._capacity << 1
     self._threshold = self._threshold << 1
     self._table = [self.DataBin() for i in range(self._capacity)]
-    for i in range(old_captcity):
+    for i in range(old_capacity):
       bin = old_table[i]
       if bin.data is None:
         continue
-      elif not bin.treeified:
-        lo_head = None
-        lo_tail = None
-        hi_head = None
-        hi_tail = None
-        node = bin.data
-        while node is not None:
-          if (node.data.hash & old_captcity) == 0:
-            # lower case
-            if lo_tail is None:
-              lo_head = node
-            else:
-              lo_tail.next = node
-            lo_tail = node
-          else:
-            # higher case
-            if hi_tail is None:
-              hi_head = node
-            else:
-              hi_tail.next = node
-            hi_tail = node
-          node = node.next
-        if lo_tail is not None:
-          lo_tail.next = None
-          self._table[i].data = lo_head
-        if hi_tail is not None:
-          hi_tail.next = None
-          self._table[i + old_captcity].data = hi_head
+      elif isinstance(bin, self.TreeDataBin):
+        self._move_tree(old_table, i, old_capacity, self._table)
       else:
-        lo_head = None
-        lo_tail = None
-        lo_count = 0
-        hi_head = None
-        hi_tail = None
-        hi_count = 0
-        def _processor(pair):
-          # using closure vas
-          nonlocal lo_head
-          nonlocal lo_tail
-          nonlocal lo_count
-          nonlocal hi_head
-          nonlocal hi_tail
-          nonlocal hi_count
-          node = self.Node(pair)
-          if (pair.hash & old_captcity) == 0:
-            # lower case
-            if lo_tail is None:
-              lo_head = node
-            else:
-              lo_tail.next = node
-            lo_tail = node
-            lo_count += 1
-          else:
-            # higher case
-            if hi_tail is None:
-              hi_head = node
-            else:
-              hi_tail.next = node
-            hi_tail = node
-            hi_count += 1
-        bin.data.traversal_preorder(_processor)
-
-        if lo_tail is not None:
-          new_bin = self._table[i]
-          if hi_head is None:
-            new_bin.data = bin.data
-            new_bin.treeified = True
-            return
-          lo_tail.next = None
-          new_bin.data = lo_head
-          if lo_count > self._treeify_threshold:
-            self._treeify(new_bin)
-        if hi_tail is not None:
-          new_bin = self._table[i + old_captcity]
-          if lo_head is None:
-            new_bin.data = bin.data
-            new_bin.treeified = True
-            return
-          hi_tail.next = None
-          new_bin.data = hi_head
-          if hi_count > self._treeify_threshold:
-            self._treeify(new_bin)
+        self._move_linked_list(old_table, i, old_capacity, self._table)
 
   # compare tow key
-  def _rbtcmp(self, pair1, pair2):
-    if pair1.hash > pair1.hash:
+  def _rbtcmp(self, entry1, entry2):
+    if entry1.hash > entry1.hash:
       return 1
-    elif pair1.hash < pair1.hash:
+    elif entry1.hash < entry1.hash:
       return -1
-    elif pair1.hash == pair1.hash and (pair1.key is pair2.key or pair1.key == pair2.key):
+    elif entry1.hash == entry1.hash and (entry1.key is entry2.key or entry1.key == entry2.key):
       return 0
     else:
-      if  pair1.key > pair2.key:
+      if  entry1.key > entry2.key:
         return 1
-      elif pair1.key < pair2.key :
+      elif entry1.key < entry2.key :
         return -1
 
   # tie break order
-  def _rbttbo(self, pair1, pair2):
-    idp1 = id(pair1.key)
-    idp2 = id(pair2.key)
-    return 1 if idp1 > idp2 else -1
+  def _rbttbo(self, entry1, entry2):
+    ide1 = id(entry1.key)
+    ide2 = id(entry2.key)
+    return 1 if ide1 > ide2 else -1
 
-  def traversal_pair(self, callback):
+  def traversal_entry(self, callback):
     for bin in self._table:
       if bin.data is None:
         continue
-      elif not bin.treeified:
-        node = bin.data
-        while node is not None:
-          pair = node.data
-          callback(pair)
-          node = node.next
-      else:
-        def _processor(pair):
-          callback(pair)
+      elif isinstance(bin, self.TreeDataBin):
+        def _processor(entry):
+          nonlocal callback
+          callback(entry)
         bin.data.traversal_preorder(_processor)
+      else:
+        curr_entry = bin.data
+        while curr_entry is not None:
+          callback(curr_entry)
+          curr_entry = curr_entry.next
 
 
   def put(self, key, value, overwrite=True):
+    if self._table is None:
+      self._resize()
     hash = self._hash(key)
-    pair = self.KeyPair(key, value, hash)
-    bin = self._table[(self._capacity-1) & pair.hash]
-    pair_presented = None
+    entry = self._new_entry(key, value, hash)
+    bin = self._table[(self._capacity-1) & entry.hash]
+    entry_presented = None
 
     # insert
     if bin.data is None:
       # linked list insert
-      bin.data = self.Node(pair)
-      bin.treeified = False
-    elif not bin.treeified: 
+      bin.data = entry
+    elif isinstance(bin, self.TreeDataBin): 
+      # red-black tree insert
+      entry_presented = bin.data.insert(entry)
+    else:
       # linked list insert
-      node = bin.data
+      curr_entry = bin.data
       count = 0
       while True:
-        curr_pair = node.data
-        if curr_pair.hash == hash and (curr_pair.key is key or curr_pair.key == key):
-          pair_presented = curr_pair
+        if curr_entry.hash == hash and (curr_entry.key is key or curr_entry.key == key):
+          entry_presented = curr_entry
           break
-        if node.next is None:
-          node.next = self.Node(pair)
+        if curr_entry.next is None:
+          curr_entry.next = entry
           if count >= self._treeify_threshold-1:
-            self._treeify(bin)
+            self._treeify(self._table, (self._capacity-1) & entry.hash)
           break
-        node = node.next
+        curr_entry = curr_entry.next
         count += 1
-    else:
-      # red-black tree insert
-      pair_presented = bin.data.insert(pair)
     
     # overwrite
-    if pair_presented is not None:
+    if entry_presented is not None:
       if overwrite:
-        pair_presented.value = value
+        entry_presented.value = value
     else:
       self._size += 1
       if self._size > self._threshold:
         self._resize()
 
   def get(self, key):
+    if self._table is None:
+      return
     hash = self._hash(key)
     bin = self._table[(self._capacity-1) & hash]
     if bin.data is None:
       return None
-    elif not bin.treeified:
-      node = bin.data
-      while node is not None:
-        curr_pair = node.data
-        if curr_pair.hash == hash and (curr_pair.key is key or curr_pair.key == key):
-          return curr_pair.value
-        node = node.next
+    elif isinstance(bin, self.TreeDataBin):
+      entry = bin.data.search(self._new_entry(key=key, hash=hash))
+      return entry.value if entry is not None else None
     else:
-      pair = bin.data.search(self.KeyPair(key=key, hash=hash))
-      return pair.value if pair is not None else None
+      curr_entry = bin.data
+      while curr_entry is not None:
+        if curr_entry.hash == hash and (curr_entry.key is key or curr_entry.key == key):
+          return curr_entry.value
+        curr_entry = curr_entry.next
 
   def remove(self, key):
+    if self._table is None:
+      return
     hash = self._hash(key)
     bin = self._table[(self._capacity-1) & hash]
     if bin.data is None:
       return
-    elif not bin.treeified:
-      node = bin.data
-      node_parent = None
-      while node is not None:
-        curr_pair = node.data
-        if curr_pair.hash == hash and (curr_pair.key is key or curr_pair.key == key):
-          break
-        node_parent = node
-        node = node.next
-      if node is None:
-        return
-      elif node_parent is None:
-        bin.data = None
-        return node.data.value
-      else:
-        node_parent.next = node.next
-        return node.data.value
-    else:
-      deleted_pair = bin.data.delete(self.KeyPair(key=key, hash=hash))
+    elif isinstance(bin, self.TreeDataBin):
+      deleted_entry = bin.data.delete(self._new_entry(key=key, hash=hash))
       if bin.data.is_empty():
+        self._table[(self._capacity-1) & hash] = self.DataBin()
         del bin.data
-        bin.treeified = False
-      if deleted_pair is not None:
+      if deleted_entry is not None:
         self._size -= 1
-        return deleted_pair.value
-
+        return deleted_entry.value
+    else:
+      curr_entry = bin.data
+      curr_entry_parent = None
+      while curr_entry is not None:
+        if curr_entry.hash == hash and (curr_entry.key is key or curr_entry.key == key):
+          break
+        curr_entry_parent = curr_entry
+        curr_entry = curr_entry.next
+      if curr_entry is None:
+        return
+      elif curr_entry_parent is None:
+        bin.data = None
+        return curr_entry.value
+      else:
+        curr_entry_parent.next = curr_entry.next
+        return curr_entry.value
 
   def keys(self):
     res = [None] * self._size
     pt = 0
-    def _processor(pair):
+    def _processor(entry):
       nonlocal res
       nonlocal pt
-      res[pt] = pair.key
+      res[pt] = entry.key
       pt += 1 
-    self.traversal_pair(_processor)
+    self.traversal_entry(_processor)
     return res
 
   def values(self):
     res = [None] * self._size
     pt = 0
-    def _processor(pair):
+    def _processor(entry):
       nonlocal res
       nonlocal pt
-      res[pt] = pair.value
+      res[pt] = entry.value
       pt += 1 
-    self.traversal_pair(_processor)
+    self.traversal_entry(_processor)
     return res
-    

@@ -54,7 +54,7 @@ class Graph:
           if not visited.contains(adj):
             visited.put(adj)
             queue.enqueue(adj)
-    if vertex_from is not None:
+    if vertex_from is not None and self.vertexs.contains(vertex_from):
       _traversal(vertex_from)
     self.vertexs.traversal(_traversal)
   
