@@ -1,5 +1,4 @@
 from rcdsa.datastruct import RedBlackTree
-import time
 
 class HashMap:
   class DataBin:
@@ -17,7 +16,6 @@ class HashMap:
       self.value = value
       self.next = next 
 
-  # init hashmap
   def __init__(self, capacity=16, load_factor=0.75):
     self._load_factor = load_factor
     self._treeify_threshold = 8
@@ -27,8 +25,10 @@ class HashMap:
     self._size = 0
     self._table = None
 
-  # util for getting power of 2 size
   def _table_size_for(self, capacity):
+    """
+    util for getting power of 2 size
+    """
     if capacity <= 0:
       return 1
     power = 1
@@ -41,15 +41,41 @@ class HashMap:
     h = key.__hash__()
     return h ^ (h >> 16) if h is not None else 0
 
+  def _new_data_bin(self, data=None):
+    return self.DataBin(data)
+
+  def _new_tree_data_bin(self, data):
+    return self.TreeDataBin(data)
+
   def _new_entry(self, key=None, value=None, hash=None, next=None):
+    """
+    hook for entry creation, this method will be invoke when there need
+    to create an entry in "put" method
+    """
     return self.Entry(key, value, hash, next)
 
-  # treeify bin, convert linked list to rbt
+  def _after_entry_insert(self, entry):
+    """
+    hook for inserted entry, this method will be invoke when an entry 
+    is inserted in "put" method
+    """
+    pass
+
+  def _after_entry_remove(self, entry):
+    """
+    hook for deleted entry, this method will be invoke when an entry 
+    is removed in "remove" method.
+    """
+    pass
+
   def _treeify(self, table, index):
+    """
+    treeify bin, convert linked list to rbt
+    """
     if not isinstance(table[index], self.TreeDataBin):
       curr = table[index].data
       rbt = RedBlackTree(self._rbtcmp, self._rbttbo)
-      table[index] = self.TreeDataBin(rbt)
+      table[index] = self._new_tree_data_bin(rbt)
       while curr is not None:
         rbt.insert(curr)
         curr = curr.next
@@ -133,8 +159,10 @@ class HashMap:
       if hi_count > self._treeify_threshold:
         self._treeify(new_table, old_index + old_capacity)
 
-  # resize hash table, the size is the power of 2
   def _resize(self):
+    """
+    resize hash table, the size is the power of 2
+    """
     if self._table is None:
       self._table = [self.DataBin() for i in range(self._capacity)]
       return
@@ -153,8 +181,10 @@ class HashMap:
       else:
         self._move_linked_list(old_table, i, old_capacity, self._table)
 
-  # compare tow key
   def _rbtcmp(self, entry1, entry2):
+    """
+    compare tow entry
+    """
     if entry1.hash > entry1.hash:
       return 1
     elif entry1.hash < entry1.hash:
@@ -167,29 +197,27 @@ class HashMap:
       elif entry1.key < entry2.key :
         return -1
 
-  # tie break order
   def _rbttbo(self, entry1, entry2):
+    """
+    tie break order for entries 
+    """
     ide1 = id(entry1.key)
     ide2 = id(entry2.key)
     return 1 if ide1 > ide2 else -1
 
-  def traversal_entry(self, callback):
+  def traversal(self, callback):
     for bin in self._table:
       if bin.data is None:
         continue
       elif isinstance(bin, self.TreeDataBin):
-        def _processor(entry):
-          nonlocal callback
-          callback(entry)
-        bin.data.traversal_preorder(_processor)
+        bin.data.traversal_preorder(lambda entry: callback(entry))
       else:
         curr_entry = bin.data
         while curr_entry is not None:
           callback(curr_entry)
           curr_entry = curr_entry.next
 
-
-  def put(self, key, value, overwrite=True):
+  def put(self, key, value, overwrite=True) -> None:
     if self._table is None:
       self._resize()
     hash = self._hash(key)
@@ -197,15 +225,12 @@ class HashMap:
     bin = self._table[(self._capacity-1) & entry.hash]
     entry_presented = None
 
-    # insert
     if bin.data is None:
-      # linked list insert
       bin.data = entry
-    elif isinstance(bin, self.TreeDataBin): 
-      # red-black tree insert
-      entry_presented = bin.data.insert(entry)
+    elif isinstance(bin, self.TreeDataBin):
+      res = bin.data.insert(entry)
+      entry_presented = res if res is not entry else None
     else:
-      # linked list insert
       curr_entry = bin.data
       count = 0
       while True:
@@ -226,6 +251,7 @@ class HashMap:
         entry_presented.value = value
     else:
       self._size += 1
+      self._after_entry_insert(entry)
       if self._size > self._threshold:
         self._resize()
 
@@ -237,7 +263,7 @@ class HashMap:
     if bin.data is None:
       return None
     elif isinstance(bin, self.TreeDataBin):
-      entry = bin.data.search(self._new_entry(key=key, hash=hash))
+      entry = bin.data.search(self.Entry(key=key, hash=hash))
       return entry.value if entry is not None else None
     else:
       curr_entry = bin.data
@@ -246,21 +272,19 @@ class HashMap:
           return curr_entry.value
         curr_entry = curr_entry.next
 
-  def remove(self, key):
+  def remove(self, key) -> None:
     if self._table is None:
       return
     hash = self._hash(key)
     bin = self._table[(self._capacity-1) & hash]
+    deleted_entry = None
     if bin.data is None:
-      return
+      pass
     elif isinstance(bin, self.TreeDataBin):
-      deleted_entry = bin.data.delete(self._new_entry(key=key, hash=hash))
+      deleted_entry = bin.data.delete(self.Entry(key=key, hash=hash))
       if bin.data.is_empty():
         self._table[(self._capacity-1) & hash] = self.DataBin()
         del bin.data
-      if deleted_entry is not None:
-        self._size -= 1
-        return deleted_entry.value
     else:
       curr_entry = bin.data
       curr_entry_parent = None
@@ -269,16 +293,18 @@ class HashMap:
           break
         curr_entry_parent = curr_entry
         curr_entry = curr_entry.next
-      if curr_entry is None:
-        return
-      elif curr_entry_parent is None:
-        bin.data = None
-        return curr_entry.value
-      else:
-        curr_entry_parent.next = curr_entry.next
-        return curr_entry.value
+      if curr_entry is not None:
+        deleted_entry = curr_entry
+        if curr_entry_parent is None:
+          bin.data = None
+        else:
+          curr_entry_parent.next = curr_entry.next
 
-  def keys(self):
+    if deleted_entry is not None:
+      self._size -= 1
+      self._after_entry_remove(deleted_entry)
+
+  def keys(self) -> list:
     res = [None] * self._size
     pt = 0
     def _processor(entry):
@@ -286,10 +312,10 @@ class HashMap:
       nonlocal pt
       res[pt] = entry.key
       pt += 1 
-    self.traversal_entry(_processor)
+    self.traversal(_processor)
     return res
 
-  def values(self):
+  def values(self) -> list:
     res = [None] * self._size
     pt = 0
     def _processor(entry):
@@ -297,5 +323,5 @@ class HashMap:
       nonlocal pt
       res[pt] = entry.value
       pt += 1 
-    self.traversal_entry(_processor)
+    self.traversal(_processor)
     return res

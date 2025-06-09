@@ -133,6 +133,7 @@ class BinarySearchTree(BinaryTree):
   def insert(self, data, overwrite=True):
     try:
       self._insert(data)
+      return data
     except Exception as e:
       if overwrite:
         node = e.args[0]

@@ -1,9 +1,9 @@
-from rcdsa.datastruct import Graph
+from rcdsa.datastruct import StableGraph
 
 
 def test_adjmatrix():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
-  graph = Graph(directed=False)
+  graph = StableGraph(directed=False)
   res = []
   for i in range(5):
     graph.insert_vertex(i)

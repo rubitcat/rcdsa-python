@@ -16,5 +16,9 @@ from .tree.heap import Heap
 from .hash.hash_map import HashMap
 from .hash.hash_set import HashSet
 from .hash.hash_table import HashTable
+from .hash.linked_hash_map import LinkedHashMap
+from .hash.linked_hash_set import LinkedHashSet
+from .hash.linked_hash_table import LinkedHashTable
 
 from .graph.graph import Graph
+from .graph.stable_graph import StableGraph

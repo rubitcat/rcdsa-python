@@ -4,11 +4,17 @@ from rcdsa.datastruct import HashSet
 class HashTable:
   def __init__(self):
     self.data = HashMap()
-    
+  
+  def _new_map(self):
+    return HashMap()
+  
+  def _new_set(self):
+    return HashSet()
+
   def put(self, row, col, value, overwrite=True):
     col_map = self.data.get(row)
     if col_map is None:
-      col_map = HashMap()
+      col_map = self._new_map()
       self.data.put(row, col_map, overwrite)
     col_map.put(col, value, overwrite)
 
@@ -50,7 +56,7 @@ class HashTable:
   def get_cols(self):
     res = []
     rows = self.data.keys()
-    res_set = HashSet()
+    res_set = self._new_set()
     for row in rows:
       col_map = self.data.get(row)
       cols = col_map.keys()
