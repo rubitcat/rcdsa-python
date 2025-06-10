@@ -1,7 +1,7 @@
 from rcdsa.datastruct import StableGraph
 
 
-def test_adjmatrix():
+def test_graph():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
   graph = StableGraph(directed=False)
   res = []
@@ -13,3 +13,7 @@ def test_adjmatrix():
   
   graph.traversal_bfs(lambda x: res.append(x), 0)
   assert res == [0, 1, 2, 3, 4]
+
+  res.clear()
+  graph.traversal_dfs(lambda x: res.append(x), 0)
+  assert res == [0, 1, 2, 4, 3]

@@ -1,4 +1,5 @@
 from rcdsa.datastruct import LinkedQueue
+from rcdsa.datastruct import LinkedStack
 from rcdsa.datastruct import HashSet
 from rcdsa.datastruct import HashTable
 
@@ -34,6 +35,31 @@ class Graph:
     self._vetable.remove(vertex_from, vertex_to)
 
   def traversal_bfs(self, callback, vertex_from=None):
+    discovered = HashSet()
+    def _traversal(vertex):
+      nonlocal self
+      nonlocal discovered
+      nonlocal callback
+      if discovered.contains(vertex) is True:
+        return
+      
+      queue = LinkedQueue()
+      queue.enqueue(vertex)
+      discovered.put(vertex)
+      while not queue.is_empty():
+        curr = queue.front()
+        queue.dequeue()
+        callback(curr)
+        adjs = self._vetable.get_keys_by_row(curr)
+        for adj in adjs:
+          if not discovered.contains(adj):
+            queue.enqueue(adj)
+            discovered.put(adj)
+    if vertex_from is not None and self.vertexs.contains(vertex_from):
+      _traversal(vertex_from)
+    self.vertexs.traversal(_traversal)
+  
+  def traversal_dfs(self, callback, vertex_from=None):
     visited = HashSet()
     def _traversal(vertex):
       nonlocal self
@@ -42,21 +68,20 @@ class Graph:
       if visited.contains(vertex) is True:
         return
       
-      queue = LinkedQueue()
-      queue.enqueue(vertex)
-      visited.put(vertex, True)
-      while not queue.is_empty():
-        curr = queue.front()
-        queue.dequeue()
+      stack = LinkedStack()
+      stack.push(vertex)
+      while not stack.is_empty():
+        curr = stack.top()
+        stack.pop()
+        if visited.contains(curr):
+          continue
         callback(curr)
+        visited.put(curr)
         adjs = self._vetable.get_keys_by_row(curr)
-        for adj in adjs:
+        for i in range(len(adjs)-1, -1, -1):
+          adj = adjs[i]
           if not visited.contains(adj):
-            visited.put(adj)
-            queue.enqueue(adj)
+            stack.push(adj)
     if vertex_from is not None and self.vertexs.contains(vertex_from):
       _traversal(vertex_from)
     self.vertexs.traversal(_traversal)
-  
-  def traversal_dfs(self, vertex_from=None):
-    pass
