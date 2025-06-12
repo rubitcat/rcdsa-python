@@ -6,7 +6,7 @@ from rcdsa.datastruct import HashTable
 class Graph:
 
   def __init__(self, directed=True):
-    self._vetable = HashTable()
+    self.vetable = HashTable()
     self.vertexs = HashSet()
     self.edges = HashSet()
     self.directed = directed
@@ -17,22 +17,22 @@ class Graph:
   def insert_edge(self, vertex_from,  vertex_to, edge, overwrite=True):
     if not self.vertexs.contains(vertex_from) or not self.vertexs.contains(vertex_to):
       raise RuntimeError("Vertex is not exists")
-    self._vetable.put(vertex_from, vertex_to, edge, overwrite)
+    self.vetable.put(vertex_from, vertex_to, edge, overwrite)
     if self.directed is False and vertex_from is not vertex_to:
-      self._vetable.put(vertex_to, vertex_from, edge, overwrite)
+      self.vetable.put(vertex_to, vertex_from, edge, overwrite)
     self.edges.put(edge, overwrite)
 
   def delete_vertex(self, vertex):
     if not self.vertexs.contains(vertex):
       return
     self.vertexs.remove(vertex)
-    self._vetable.remove_row(vertex)
-    self._vetable.remove_col(vertex)
+    self.vetable.remove_row(vertex)
+    self.vetable.remove_col(vertex)
 
   def delete_edge(self, vertex_from,  vertex_to):
     if not self.vertexs.contains(vertex_from) or not self.vertexs.contains(vertex_to):
       return
-    self._vetable.remove(vertex_from, vertex_to)
+    self.vetable.remove(vertex_from, vertex_to)
 
   def traversal_bfs(self, callback, vertex_from=None):
     discovered = HashSet()
@@ -50,7 +50,7 @@ class Graph:
         curr = queue.front()
         queue.dequeue()
         callback(curr)
-        adjs = self._vetable.get_keys_by_row(curr)
+        adjs = self.vetable.get_keys_by_row(curr)
         for adj in adjs:
           if not discovered.contains(adj):
             queue.enqueue(adj)
@@ -77,7 +77,7 @@ class Graph:
           continue
         callback(curr)
         visited.put(curr)
-        adjs = self._vetable.get_keys_by_row(curr)
+        adjs = self.vetable.get_keys_by_row(curr)
         for i in range(len(adjs)-1, -1, -1):
           adj = adjs[i]
           if not visited.contains(adj):

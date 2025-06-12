@@ -6,7 +6,7 @@ from rcdsa.datastruct import LinkedHashTable
 class StableGraph(Graph):
 
   def __init__(self, directed=True):
-    self._vetable = LinkedHashTable()
+    self.vetable = LinkedHashTable()
     self.vertexs = LinkedHashSet()
     self.edges = LinkedHashSet()
     self.directed = directed
