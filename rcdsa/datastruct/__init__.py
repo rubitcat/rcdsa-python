@@ -22,3 +22,6 @@ from .hash.linked_hash_table import LinkedHashTable
 
 from .graph.graph import Graph
 from .graph.stable_graph import StableGraph
+
+
+from .tree.union_find_set import UnionFindSet

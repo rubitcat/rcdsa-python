@@ -46,7 +46,6 @@ class LinkedList:
     self.size -= 1
     return curr.data
 
-
   def append(self, data):
     node = self.Node(data)
     if self.tail is not None:
@@ -65,4 +64,17 @@ class LinkedList:
     self.tail.next = None
     self.tail = self.tail.prev
     return tail.data
-    
+  
+  def traversal(self, callback, reverse=False):
+    if not reverse:
+      curr = self.head
+      while curr is not None:
+        callback(curr.data)
+        curr = curr.next
+    else:
+      curr = self.tail
+      while curr is not None:
+        callback(curr.data)
+        curr = curr.prev
+
+      
