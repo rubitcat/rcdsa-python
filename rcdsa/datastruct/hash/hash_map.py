@@ -217,6 +217,9 @@ class HashMap:
           callback(curr_entry)
           curr_entry = curr_entry.next
 
+  def size(self):
+    return self._size
+
   def put(self, key, value, overwrite=True) -> None:
     if self._table is None:
       self._resize()
@@ -322,6 +325,17 @@ class HashMap:
       nonlocal res
       nonlocal pt
       res[pt] = entry.value
+      pt += 1 
+    self.traversal(_processor)
+    return res
+  
+  def entries(self) -> list:
+    res = [None] * self._size
+    pt = 0
+    def _processor(entry):
+      nonlocal res
+      nonlocal pt
+      res[pt] = entry
       pt += 1 
     self.traversal(_processor)
     return res

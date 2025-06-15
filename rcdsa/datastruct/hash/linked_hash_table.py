@@ -4,7 +4,7 @@ from rcdsa.datastruct import HashTable
 
 class LinkedHashTable(HashTable):
   def __init__(self):
-    self.data = LinkedHashMap()
+    super().__init__()
   
   def _new_map(self):
     return LinkedHashMap()

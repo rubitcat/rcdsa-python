@@ -1,7 +1,7 @@
 from rcdsa.datastruct import LinkedStack
 from rcdsa.datastruct import Heap
 
-def _cmp(x, y):
+def default_cmp(x, y):
   if x.__gt__(y):
     return 1
   elif x.__lt__(y):
@@ -13,7 +13,7 @@ def _cmp(x, y):
 Selection Sort
 :param arr:
 """
-def selection_sort(arr, cmp=_cmp):
+def selection_sort(arr, cmp=default_cmp):
   for i in range(len(arr)-1):
     mxx = i
     for j in range(i+1, len(arr)):
@@ -26,7 +26,7 @@ def selection_sort(arr, cmp=_cmp):
 Bubble Sort
 :param arr:
 """
-def bubble_sort(arr, cmp=_cmp):
+def bubble_sort(arr, cmp=default_cmp):
   n = len(arr)
   for i in range(n):
     swapped = False
@@ -42,7 +42,7 @@ def bubble_sort(arr, cmp=_cmp):
 Insertion Sort
 :param arr:
 """
-def insertion_sort(arr, cmp=_cmp):
+def insertion_sort(arr, cmp=default_cmp):
   for i in range(1, len(arr)):
     key = arr[i]
     j = i-1
@@ -55,7 +55,7 @@ def insertion_sort(arr, cmp=_cmp):
 Quick Sort
 :param arr:
 """
-def quick_sort(arr, start=None, end=None, cmp=_cmp):
+def quick_sort(arr, start=None, end=None, cmp=default_cmp):
   class Param:
     def __init__(self, low, high):
       self.low = low
@@ -89,7 +89,7 @@ def quick_sort(arr, start=None, end=None, cmp=_cmp):
 Heap Sort
 :param arr:
 """
-def heap_sort(arr, cmp=_cmp):
+def heap_sort(arr, cmp=default_cmp):
   n = len(arr)
   for i in range(n//2, -1, -1):
     Heap.heapify(arr, n, i, cmp)
@@ -101,7 +101,7 @@ def heap_sort(arr, cmp=_cmp):
 Heap Sort
 :param arr:
 """
-def merge_sort(arr, cmp=_cmp):
+def merge_sort(arr, cmp=default_cmp):
   class Param:
     def __init__(self, left, right, divided):
       self.left = left

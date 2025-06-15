@@ -2,8 +2,16 @@ from rcdsa.datastruct import HashMap
 from rcdsa.datastruct import HashSet
 
 class HashTable:
+  
+  class Entry:
+    def __init__(self, row=None, col=None, value=None):
+      self.row = row
+      self.col = col
+      self.value = value
+
   def __init__(self):
-    self.data = HashMap()
+    self.data = self._new_map()
+    self._size = 0
   
   def _new_map(self):
     return HashMap()
@@ -11,12 +19,17 @@ class HashTable:
   def _new_set(self):
     return HashSet()
 
+  def size(self):
+    return self._size
+
   def put(self, row, col, value, overwrite=True):
     col_map = self.data.get(row)
     if col_map is None:
       col_map = self._new_map()
       self.data.put(row, col_map, overwrite)
+    old_size = col_map.size()
     col_map.put(col, value, overwrite)
+    self._size += col_map.size() - old_size
 
   def get(self, row, col):
     col_map = self.data.get(row)
@@ -40,7 +53,10 @@ class HashTable:
     col_map = self.data.get(row)
     if col_map is None:
       return
-    return col_map.remove(col)
+    old_size = col_map.size()
+    removed = col_map.remove(col)
+    self._size += col_map.size() - old_size
+    return removed
 
   def remove_row(self, row):
     self.data.remove(row)
@@ -63,4 +79,25 @@ class HashTable:
       for col in cols:
         res_set.put(col, False)
     res_set.traversal(lambda col: res.append(col))
+    return res
+  
+  def traversal(self, callback):
+    def _process_row(row):
+      nonlocal callback
+      def _process_col(col):
+        nonlocal callback
+        nonlocal row
+        callback(self.Entry(row.key, col.key, col.value))
+      row.value.traversal(_process_col)
+    self.data.traversal(_process_row)
+  
+  def entries(self):
+    res = [None] * self._size 
+    pt = 0
+    def _processor(entry):
+      nonlocal res
+      nonlocal pt
+      res[pt] = entry
+      pt += 1
+    self.traversal(_processor)
     return res

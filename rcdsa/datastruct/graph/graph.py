@@ -4,6 +4,13 @@ from rcdsa.datastruct import HashSet
 from rcdsa.datastruct import HashTable
 
 class Graph:
+  class Edge:
+    def __init__(self, from_vertex=None, to_vertex=None, edge=None):
+      self.from_vertex = from_vertex
+      self.to_vertex = to_vertex
+      self.edge = edge
+    def __hash__(self):
+      return self.edge.__hash__()
 
   def __init__(self, directed=True):
     self.vetable = HashTable()
@@ -18,9 +25,10 @@ class Graph:
     if not self.vertexs.contains(vertex_from) or not self.vertexs.contains(vertex_to):
       raise RuntimeError("Vertex is not exists")
     self.vetable.put(vertex_from, vertex_to, edge, overwrite)
+    self.edges.put(self.Edge(vertex_from, vertex_to, edge), True)
     if self.directed is False and vertex_from is not vertex_to:
       self.vetable.put(vertex_to, vertex_from, edge, overwrite)
-    self.edges.put(edge, overwrite)
+      self.edges.put(self.Edge(vertex_to, vertex_from, edge), True)
 
   def delete_vertex(self, vertex):
     if not self.vertexs.contains(vertex):

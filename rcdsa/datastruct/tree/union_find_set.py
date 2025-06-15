@@ -27,14 +27,14 @@ class UnionFindSet:
       if yrank is None:
         yrank = 0
       if xrank < yrank:
-        self._parent.put(x, y)
+        self._parent.put(xroot, yroot)
       elif xrank > yrank: 
-        self._parent.put(y, x)
+        self._parent.put(yroot, xroot)
       else:
-        self._parent.put(x, y)
-        self._rank.put(x, xrank + 1)
+        self._parent.put(xroot, yroot)
+        self._rank.put(yroot, yrank + 1)
     else:
-      self._parent.put(xr, yr)
+      self._parent.put(xroot, yroot)
     
   def find(self, x):
     xp = self._parent.get(x)
@@ -55,4 +55,5 @@ class UnionFindSet:
     return xp
 
   def is_united(self, x, y):
-    return self.find(x) == self.find(y)
+    res = self.find(x) == self.find(y)
+    return res 

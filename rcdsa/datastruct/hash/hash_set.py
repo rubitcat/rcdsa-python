@@ -12,7 +12,7 @@ class HashSet:
 
   def __init__(self):
     self._rbt = RedBlackTree()
-    self.size = 0
+    self._size = 0
 
   def _new_entry(self, data=None):
     return self.Entry(data)
@@ -24,13 +24,16 @@ class HashSet:
     pass
 
   def is_empty(self):
-    return self.size == 0
+    return self._size == 0
+  
+  def size(self):
+    return self._size
 
   def put(self, data, overwrite=True):
     new_entry = self._new_entry(data)
     entry = self._rbt.insert(new_entry, overwrite)
     if entry == new_entry:
-      self.size += 1
+      self._size += 1
       self._after_entry_insert(new_entry)
 
   def remove(self, data):
@@ -38,7 +41,7 @@ class HashSet:
       raise RuntimeError("HashSet underflow")
     deleted_entry = self._rbt.delete(self.Entry(data))
     if deleted_entry is not None:
-      self.size -= 1
+      self._size -= 1
     self._after_entry_remove(deleted_entry)
      
   def contains(self, data):
@@ -46,3 +49,14 @@ class HashSet:
 
   def traversal(self, callback):
     self._rbt.traversal_preorder(lambda entry: callback(entry.data))
+
+  def values(self):
+    res = [None] * self._size
+    pt = 0
+    def _processor(data):
+      nonlocal pt
+      nonlocal res
+      res[pt] = data
+      pt += 1
+    self.traversal(_processor)
+    return res

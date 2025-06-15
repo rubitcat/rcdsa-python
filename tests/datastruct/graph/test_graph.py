@@ -1,5 +1,6 @@
 from rcdsa.datastruct import StableGraph
 from rcdsa.algorithm.dijkstra import dijkstra
+from rcdsa.algorithm.kruskal_mst import kruskal_mst
 
 def test_graph():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
@@ -31,3 +32,29 @@ def test_dijkstra():
   dist = dijkstra(graph, 0, lambda x: x)
   dist.traversal(lambda x: res.append([x.key, x.value]))
   assert [[0,0],[1,4],[2,8],[3,10],[4,10]] == res
+
+def test_kruskal_mst():
+  graph = StableGraph(directed=False)
+  mst = StableGraph(directed=False)
+  vn = 9
+  edges = [
+    [0, 1, 4],
+    [0, 7, 8],
+    [1, 7, 11],
+    [1, 2, 8],
+    [7, 8, 7],
+    [7, 6, 1],
+    [2, 8, 2],
+    [8, 6, 6],
+    [2, 3, 7],
+    [2, 5, 4],
+    [6, 5, 2],
+    [3, 5, 14],
+    [3, 4, 9],
+    [5, 4, 10],
+  ]
+  for i in range(vn):
+    graph.insert_vertex(i)
+  for edge in edges:
+    graph.insert_edge(edge[0], edge[1], edge[2])
+  assert kruskal_mst(graph, mst, lambda x: x) == 37
