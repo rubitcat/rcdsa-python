@@ -2,9 +2,9 @@ from rcdsa.datastruct import LinkedStack
 from rcdsa.datastruct import Heap
 
 def default_cmp(x, y):
-  if x.__gt__(y):
+  if x > y:
     return 1
-  elif x.__lt__(y):
+  elif x < y:
     return -1
   else:
     return 0
@@ -92,10 +92,10 @@ Heap Sort
 def heap_sort(arr, cmp=default_cmp):
   n = len(arr)
   for i in range(n//2, -1, -1):
-    Heap.heapify(arr, n, i, cmp)
+    Heap.heapify(arr, n, i, lambda x,y: -default_cmp(x, y))
   for i in range(n-1, 0, -1):
     arr[i], arr[0] = arr[0], arr[i]
-    Heap.heapify(arr, i, 0, cmp)
+    Heap.heapify(arr, i, 0, lambda x,y: -default_cmp(x, y))
 
 """
 Heap Sort

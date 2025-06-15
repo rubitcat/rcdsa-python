@@ -2,13 +2,6 @@ from rcdsa.datastruct import HashMap
 from rcdsa.datastruct import Graph
 from rcdsa.datastruct import Heap
 
-def pair_cmp(p1, p2):
-  if p1.dist < p2.dist:
-    return 1
-  elif p2.dist > p1.dist:
-    return -1
-  else:
-    return 0
 
 class pair:
   def __init__(self, dist=None, vertex=None):
@@ -20,7 +13,7 @@ def dijkstra(graph: Graph, from_vertex, get_weight):
   vsize = graph.vertexs.size()
   dist = HashMap(vsize)
   dist.put(from_vertex, 0)
-  min_heap = Heap(vsize, pair_cmp)
+  min_heap = Heap(vsize, lambda x,y: Heap.default_cmp(x.dist, y.dist))
   min_heap.push(pair(0, from_vertex))
   while not min_heap.is_empty():
     vertex = min_heap.top().vertex

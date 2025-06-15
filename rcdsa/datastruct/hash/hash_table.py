@@ -27,9 +27,9 @@ class HashTable:
     if col_map is None:
       col_map = self._new_map()
       self.data.put(row, col_map, overwrite)
-    old_size = col_map.size()
-    col_map.put(col, value, overwrite)
-    self._size += col_map.size() - old_size
+    res = col_map.put(col, value, overwrite)
+    if res == value:
+      self._size += 1
 
   def get(self, row, col):
     col_map = self.data.get(row)
@@ -53,9 +53,9 @@ class HashTable:
     col_map = self.data.get(row)
     if col_map is None:
       return
-    old_size = col_map.size()
     removed = col_map.remove(col)
-    self._size += col_map.size() - old_size
+    if removed is not None:
+      self._size -= 1
     return removed
 
   def remove_row(self, row):

@@ -16,6 +16,9 @@ class BinaryTree(Tree):
 
   def is_empty(self):
     return self.root is None
+  
+  def root(self):
+    return self.root
 
   def insert(self, data=None):
     node = self.Node(data)

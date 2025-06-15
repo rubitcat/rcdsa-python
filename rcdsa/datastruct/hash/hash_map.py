@@ -220,7 +220,7 @@ class HashMap:
   def size(self):
     return self._size
 
-  def put(self, key, value, overwrite=True) -> None:
+  def put(self, key, value, overwrite=True) -> int:
     if self._table is None:
       self._resize()
     hash = self._hash(key)
@@ -251,14 +251,18 @@ class HashMap:
     # overwrite
     if entry_presented is not None:
       if overwrite:
+        old_value = entry_presented.value
         entry_presented.value = value
+        return old_value
+      return
     else:
       self._size += 1
       self._after_entry_insert(entry)
       if self._size > self._threshold:
         self._resize()
+      return value
 
-  def get(self, key):
+  def _get_entry(self, key):
     if self._table is None:
       return
     hash = self._hash(key)
@@ -266,16 +270,32 @@ class HashMap:
     if bin.data is None:
       return None
     elif isinstance(bin, self.TreeDataBin):
-      entry = bin.data.search(self.Entry(key=key, hash=hash))
-      return entry.value if entry is not None else None
+      return bin.data.search(self.Entry(key=key, hash=hash))
     else:
       curr_entry = bin.data
       while curr_entry is not None:
         if curr_entry.hash == hash and (curr_entry.key is key or curr_entry.key == key):
-          return curr_entry.value
+          return curr_entry
         curr_entry = curr_entry.next
 
-  def remove(self, key) -> None:
+  def get(self, key):
+    entry = self._get_entry(key)
+    return entry.value if entry is not None else None
+
+  def contains(self, key):
+    entry = self._get_entry(key)
+    return entry is not None
+
+  def first(self):
+    for bin in self._table:
+      if bin.data is None:
+        continue
+      elif isinstance(bin, self.TreeDataBin):
+        return bin.data.root().data
+      else:
+        return bin.data
+    
+  def remove(self, key):
     if self._table is None:
       return
     hash = self._hash(key)
@@ -306,6 +326,7 @@ class HashMap:
     if deleted_entry is not None:
       self._size -= 1
       self._after_entry_remove(deleted_entry)
+      return deleted_entry
 
   def keys(self) -> list:
     res = [None] * self._size
