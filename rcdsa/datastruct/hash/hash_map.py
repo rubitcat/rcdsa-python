@@ -328,7 +328,12 @@ class HashMap:
       self._after_entry_remove(deleted_entry)
       return deleted_entry
 
+  def clear(self):
+    pass
+
   def keys(self) -> list:
+    if self._size == 0:
+      return []
     res = [None] * self._size
     pt = 0
     def _processor(entry):
@@ -340,6 +345,8 @@ class HashMap:
     return res
 
   def values(self) -> list:
+    if self._size == 0:
+      return []
     res = [None] * self._size
     pt = 0
     def _processor(entry):
@@ -351,6 +358,8 @@ class HashMap:
     return res
   
   def entries(self) -> list:
+    if self._size == 0:
+      return []
     res = [None] * self._size
     pt = 0
     def _processor(entry):

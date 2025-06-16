@@ -2,12 +2,13 @@ from rcdsa.datastruct import Graph
 from rcdsa.datastruct import UnionFindSet
 from rcdsa.algorithm import sort
 
-
 def kruskal_mst(graph: Graph, mst: Graph, get_weight):
+  if graph.directed:
+    raise RuntimeError("graph must be an undirected graph") 
   edges = graph.edges.values()
   sort.quick_sort(edges, cmp=lambda x, y: sort.default_cmp(
-    get_weight(x.edge), 
-    get_weight(y.edge))
+    get_weight(x.value), 
+    get_weight(y.value))
   )
   ufs = UnionFindSet()
   graph.vertexs.traversal(lambda v: (ufs.add(v), mst.insert_vertex(v)))
@@ -17,10 +18,10 @@ def kruskal_mst(graph: Graph, mst: Graph, get_weight):
   for edge in edges:
     # cycle detect using union-find set
     if not ufs.is_united(edge.from_vertex, edge.to_vertex):
-      mst.insert_edge(edge.from_vertex, edge.to_vertex, edge.edge)
+      mst.insert_edge(edge.from_vertex, edge.to_vertex, edge.value)
       ufs.union(edge.from_vertex, edge.to_vertex)
       count += 1
-      cost += get_weight(edge.edge)
+      cost += get_weight(edge.value)
       if count == vsize - 1: 
         break
   return cost

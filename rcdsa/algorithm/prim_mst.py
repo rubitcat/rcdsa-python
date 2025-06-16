@@ -2,9 +2,9 @@ from rcdsa.datastruct import Graph
 from rcdsa.datastruct import HashSet
 from rcdsa.datastruct import Heap
 
-
-
 def prim_mst(graph: Graph, mst: Graph, get_weight):
+  if graph.directed:
+    raise RuntimeError("graph must be an undirected graph") 
   vetable = graph.vetable 
   visited = HashSet()
   min_heap = Heap(graph.edges.size(), lambda x,y: Heap.default_cmp(x[0], y[0]))

@@ -5,12 +5,12 @@ from rcdsa.datastruct import HashTable
 
 class Graph:
   class Edge:
-    def __init__(self, from_vertex=None, to_vertex=None, edge=None):
+    def __init__(self, from_vertex=None, to_vertex=None, value=None):
       self.from_vertex = from_vertex
       self.to_vertex = to_vertex
-      self.edge = edge
+      self.value = value
     def __hash__(self):
-      return self.edge.__hash__()
+      return self.value.__hash__()
 
   def __init__(self, directed=True):
     self.vetable = HashTable()

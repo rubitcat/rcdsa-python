@@ -2,6 +2,7 @@ from rcdsa.datastruct import StableGraph
 from rcdsa.algorithm.dijkstra import dijkstra
 from rcdsa.algorithm.kruskal_mst import kruskal_mst
 from rcdsa.algorithm.prim_mst import prim_mst
+from rcdsa.algorithm.boruvka_mst import boruvka_mst
 
 def test_graph():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
@@ -65,3 +66,6 @@ def test_mst():
   # prim_mst
   prim_mst_res = StableGraph(directed=False)
   assert prim_mst(graph, prim_mst_res, lambda x: x) == 37
+
+  boruvka_mst_res = StableGraph(directed=False)
+  assert boruvka_mst(graph, boruvka_mst_res, lambda x: x) == 37
