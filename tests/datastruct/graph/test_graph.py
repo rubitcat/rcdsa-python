@@ -1,10 +1,10 @@
 from rcdsa.datastruct import StableGraph
-from rcdsa.algorithm.dijkstra import dijkstra
-from rcdsa.algorithm.kruskal_mst import kruskal_mst
-from rcdsa.algorithm.prim_mst import prim_mst
-from rcdsa.algorithm.boruvka_mst import boruvka_mst
-from rcdsa.algorithm.topo_sort import topo_sort
-from rcdsa.algorithm.floyd_warshall import floyd_warshall
+from rcdsa.algorithm.graph import dijkstra
+from rcdsa.algorithm.graph import kruskal_mst
+from rcdsa.algorithm.graph import prim_mst
+from rcdsa.algorithm.graph import boruvka_mst
+from rcdsa.algorithm.graph import topo_sort
+from rcdsa.algorithm.graph import floyd_warshall
 
 def test_graph():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
