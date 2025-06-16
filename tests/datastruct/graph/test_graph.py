@@ -4,6 +4,7 @@ from rcdsa.algorithm.kruskal_mst import kruskal_mst
 from rcdsa.algorithm.prim_mst import prim_mst
 from rcdsa.algorithm.boruvka_mst import boruvka_mst
 from rcdsa.algorithm.topo_sort import topo_sort
+from rcdsa.algorithm.floyd_warshall import floyd_warshall
 
 def test_graph():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
@@ -22,7 +23,7 @@ def test_graph():
   graph.traversal_dfs(lambda x: res.append(x), 0)
   assert res == [0, 1, 2, 4, 3]
 
-def test_dijkstra():
+def test_shortest_path():
   graph = StableGraph(directed=False)
   res = []
   vn = 5
@@ -33,8 +34,19 @@ def test_dijkstra():
     graph.insert_edge(edge[0], edge[1], edge[2])
   
   dist = dijkstra(graph, 0, lambda x: x)
-  dist.traversal(lambda x: res.append([x.key, x.value]))
-  assert [[0,0],[1,4],[2,8],[3,10],[4,10]] == res
+  assert dist.get(0) == 0
+  assert dist.get(1) == 4
+  assert dist.get(2) == 8
+  assert dist.get(3) == 10
+  assert dist.get(4) == 10
+
+  dist2 = floyd_warshall(graph, lambda x: x)
+  assert dist2.get(0,0) == 0
+  assert dist2.get(0,1) == 4
+  assert dist2.get(0,2) == 8
+  assert dist2.get(0,3) == 10
+  assert dist2.get(0,4) == 10
+  
 
 def test_mst():
   graph = StableGraph(directed=False)

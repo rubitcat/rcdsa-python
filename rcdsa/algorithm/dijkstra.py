@@ -4,7 +4,7 @@ from rcdsa.datastruct import Heap
 
 
 class pair:
-  def __init__(self, dist=None, vertex=None):
+  def __init__(self, dist=None, vertex=None) -> HashMap:
     self.dist = dist
     self.vertex = vertex
 
