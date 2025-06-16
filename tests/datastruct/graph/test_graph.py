@@ -3,6 +3,7 @@ from rcdsa.algorithm.dijkstra import dijkstra
 from rcdsa.algorithm.kruskal_mst import kruskal_mst
 from rcdsa.algorithm.prim_mst import prim_mst
 from rcdsa.algorithm.boruvka_mst import boruvka_mst
+from rcdsa.algorithm.topo_sort import topo_sort
 
 def test_graph():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
@@ -69,3 +70,33 @@ def test_mst():
 
   boruvka_mst_res = StableGraph(directed=False)
   assert boruvka_mst(graph, boruvka_mst_res, lambda x: x) == 37
+
+def test_topo_sort():
+  graph = StableGraph()
+  vertex = 7
+  edge = [
+    [0,1],
+    [0,2],
+    [1,2],
+    [1,3],
+    [2,4],
+    [4,5],
+    [3,6],
+    [3,5],
+  ]
+  for v in range(vertex):
+    graph.insert_vertex(v)
+  for e in edge:
+    graph.insert_edge(e[0], e[1], None)
+  
+  res = topo_sort(graph)
+  for e in edge:
+    for i in range(len(res)):
+      if res[i] == e[0]:
+        j = i + 1
+        finded = False
+        for j in range(len(res)):
+          if res[j] == e[1]:
+            finded = True
+            break
+        assert finded == True
