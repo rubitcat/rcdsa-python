@@ -4,6 +4,7 @@ from rcdsa.algorithm.graph import kruskal_mst
 from rcdsa.algorithm.graph import prim_mst
 from rcdsa.algorithm.graph import boruvka_mst
 from rcdsa.algorithm.graph import topo_sort
+from rcdsa.algorithm.graph import all_topo_sort
 from rcdsa.algorithm.graph import floyd_warshall
 
 def test_graph():
@@ -107,8 +108,25 @@ def test_topo_sort():
       if res[i] == e[0]:
         j = i + 1
         finded = False
-        for j in range(len(res)):
+        while j < len(res):
           if res[j] == e[1]:
             finded = True
             break
+          j += 1
         assert finded == True
+        break
+  
+  res2 = all_topo_sort(graph)
+  for res in res2:
+    for e in edge:
+      for i in range(len(res)):
+        if res[i] == e[0]:
+          j = i + 1
+          finded = False
+          while j < len(res):
+            if res[j] == e[1]:
+              finded = True
+              break
+            j += 1
+          assert finded == True
+          break

@@ -2,7 +2,7 @@ from rcdsa.datastruct import Graph
 from rcdsa.datastruct import HashMap
 from rcdsa.datastruct import LinkedQueue
 
-def topo_sort(graph: Graph):
+def topo_sort(graph: Graph) -> list:
   if not graph.directed:
     raise RuntimeError("graph must be a directed graph") 
 
