@@ -8,7 +8,7 @@ def dijkstra(graph: Graph, from_vertex, get_weight) -> HashMap:
   vsize = graph.vertexs.size()
   dist = HashMap(vsize)
   dist.put(from_vertex, 0)
-  min_heap = Heap(vsize, lambda x,y: Heap.default_cmp(x[0], y[0]))
+  min_heap = Heap(vsize, cmp=lambda x,y: Heap.default_cmp(x[0], y[0]))
   min_heap.push((0, from_vertex))
   while not min_heap.is_empty():
     vertex = min_heap.top()[1]
