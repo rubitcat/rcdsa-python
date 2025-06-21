@@ -1,9 +1,9 @@
 from rcdsa.datastruct import Graph
 from rcdsa.datastruct import HashTable
 
-def floyd_warshall(graph: Graph, get_weight) -> HashTable:
+def floyd_warshall(graph: Graph, get_weight=lambda e: e.value, path: HashTable = None) -> HashTable:
   dist = HashTable()
-  graph.vetable.traversal(lambda e: dist.put(e.row, e.col, get_weight(e.value)))
+  graph.vetable.traversal(lambda e: dist.put(e.row, e.col, get_weight(e)))
   vertexs = graph.vertexs.values()
   for v in vertexs:
     dist.put(v, v, 0)

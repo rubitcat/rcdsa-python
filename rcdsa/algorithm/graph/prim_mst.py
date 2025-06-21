@@ -2,7 +2,7 @@ from rcdsa.datastruct import Graph
 from rcdsa.datastruct import HashSet
 from rcdsa.datastruct import Heap
 
-def prim_mst(graph: Graph, mst: Graph, get_weight):
+def prim_mst(graph: Graph, mst: Graph, get_weight=lambda e: e.value):
   if graph.directed:
     raise RuntimeError("graph must be an undirected graph") 
   vetable = graph.vetable 
@@ -25,6 +25,6 @@ def prim_mst(graph: Graph, mst: Graph, get_weight):
     for adj in adjs:
       if not visited.contains(adj):
         adj_edge = vetable.get(to_vertex, adj)
-        adj_edge_weight = get_weight(adj_edge)
+        adj_edge_weight = get_weight(Graph.Edge(to_vertex, adj, adj_edge))
         min_heap.push((adj_edge_weight, to_vertex, adj, adj_edge))
   return cost

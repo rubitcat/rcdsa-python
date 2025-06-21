@@ -2,7 +2,7 @@ from rcdsa.datastruct import Graph
 from rcdsa.datastruct import UnionFindSet
 from rcdsa.datastruct import HashMap
 
-def boruvka_mst(graph: Graph, mst: Graph, get_weight):
+def boruvka_mst(graph: Graph, mst: Graph, get_weight=lambda e: e.value, path: HashMap = None):
   if graph.directed:
     raise RuntimeError("graph must be an undirected graph") 
   edges = graph.edges.values()
@@ -18,9 +18,9 @@ def boruvka_mst(graph: Graph, mst: Graph, get_weight):
       if xroot is not yroot:
         xedge = cheapest_edge.get(xroot)
         yedge = cheapest_edge.get(yroot)
-        if xedge is None or get_weight(edge.value) < get_weight(xedge.value):
+        if xedge is None or get_weight(edge) < get_weight(xedge):
           cheapest_edge.put(xroot, edge)
-        if yedge is None or get_weight(edge.value) < get_weight(yedge.value):
+        if yedge is None or get_weight(edge) < get_weight(yedge):
           cheapest_edge.put(yroot, edge)
 
     for edge in cheapest_edge.values():
@@ -29,6 +29,6 @@ def boruvka_mst(graph: Graph, mst: Graph, get_weight):
       if xroot is not yroot:
         mst.insert_edge(edge.from_vertex, edge.to_vertex, edge.value)
         ufs.union(xroot, yroot)
-        cost += get_weight(edge.value)
+        cost += get_weight(edge)
         tree_count -= 1
   return cost

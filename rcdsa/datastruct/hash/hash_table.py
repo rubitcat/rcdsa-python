@@ -62,7 +62,7 @@ class HashTable:
     self.data.remove(row)
 
   def remove_col(self, col):
-    rows = self.data.keys()
+    rows = self.data.values()
     for row in rows:
       row.remove(col)
 

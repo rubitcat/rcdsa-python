@@ -1,9 +1,9 @@
-from rcdsa.datastruct import HashMap
 from rcdsa.datastruct import Graph
+from rcdsa.datastruct import HashMap
 from rcdsa.datastruct import Heap
 
 
-def dijkstra(graph: Graph, from_vertex, get_weight) -> HashMap:
+def dijkstra(graph: Graph, from_vertex, get_weight=lambda e: e.value, path: HashMap = None) -> HashMap:
   vetable = graph.vetable
   vsize = graph.vertexs.size()
   dist = HashMap(vsize)
@@ -14,13 +14,13 @@ def dijkstra(graph: Graph, from_vertex, get_weight) -> HashMap:
     vertex = min_heap.top()[1]
     min_heap.pop()
     adjs = vetable.get_keys_by_row(vertex)
-    if (mid := dist.get(vertex)) is not None:
+    if adjs is not None and (mid := dist.get(vertex)) is not None:
       for adj in adjs:
         if (adj_dist := dist.get(adj)) is None:
-          new_dist = mid + get_weight(vetable.get(vertex, adj))
+          new_dist = mid + get_weight(Graph.Edge(vertex, adj, vetable.get(vertex, adj)))
           dist.put(adj, new_dist)
           min_heap.push((new_dist, adj))
-        elif (new_dist := mid + get_weight(vetable.get(vertex, adj))) < adj_dist:
+        elif (new_dist := mid + get_weight(Graph.Edge(vertex, adj, vetable.get(vertex, adj)))) < adj_dist:
           dist.put(adj, new_dist)
           min_heap.push((new_dist, adj))
   return dist
