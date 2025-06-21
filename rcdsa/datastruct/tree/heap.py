@@ -39,20 +39,16 @@ class Heap:
     return self.heap[0]
   
   @classmethod
-  def heappush(cls, data, heap, size, cmp=default_cmp):
-    curr = size
-    while curr != 0 and cmp(heap[(curr-1)//2], data) > 0:
-      heap[curr] = heap[(curr-1)//2]
-      curr = (curr-1)//2
-    heap[curr] = data
+  def heappush(cls, data, arr, size, cmp=default_cmp):
+    arr[size] = data
+    cls.heapify_bottom_up(arr, size, cmp)
 
   @classmethod
-  def heappop(cls, heap, size, cmp=default_cmp):
+  def heappop(cls, arr, size, cmp=default_cmp):
     last = size - 1
-    heap[0] = heap[last]
-    heap[last] = None
-    cls.heapify(heap, size-1, 0, cmp)
-
+    arr[0] = arr[last]
+    arr[last] = None
+    cls.heapify(arr, size-1, 0, cmp)
 
   @classmethod
   def heapify(cls, arr, size, start, cmp=default_cmp):
@@ -69,3 +65,13 @@ class Heap:
       mxx = mxx*2+1
     if curr != start:
       arr[curr] = top
+  
+  @classmethod
+  def heapify_bottom_up(cls, arr, index, cmp=default_cmp):
+    data = arr[index]
+    curr = index
+    while curr != 0 and cmp(arr[(curr-1)//2], data) > 0:
+      arr[curr] = arr[(curr-1)//2]
+      curr = (curr-1)//2
+    if curr != index:
+      arr[curr] = data

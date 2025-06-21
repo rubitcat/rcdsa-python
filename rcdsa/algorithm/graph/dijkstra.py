@@ -14,12 +14,15 @@ def dijkstra(graph: Graph, from_vertex, get_weight) -> HashMap:
     vertex = min_heap.top()[1]
     min_heap.pop()
     adjs = vetable.get_keys_by_row(vertex)
-    for adj in adjs:
-      old_dist = dist.get(adj)
-      new_dist = dist.get(vertex) + get_weight(vetable.get(vertex, adj)) 
-      if old_dist is None or (new_dist is not None and new_dist < old_dist):
-        dist.put(adj, new_dist)
-        min_heap.push((new_dist, adj))
+    if (mid := dist.get(vertex)) is not None:
+      for adj in adjs:
+        if (adj_dist := dist.get(adj)) is None:
+          new_dist = mid + get_weight(vetable.get(vertex, adj))
+          dist.put(adj, new_dist)
+          min_heap.push((new_dist, adj))
+        elif (new_dist := mid + get_weight(vetable.get(vertex, adj))) < adj_dist:
+          dist.put(adj, new_dist)
+          min_heap.push((new_dist, adj))
   return dist
 
     

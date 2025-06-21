@@ -1,3 +1,4 @@
+import pytest
 from rcdsa.datastruct import StableGraph
 from rcdsa.algorithm.graph import dijkstra
 from rcdsa.algorithm.graph import kruskal_mst
@@ -6,6 +7,7 @@ from rcdsa.algorithm.graph import boruvka_mst
 from rcdsa.algorithm.graph import topo_sort
 from rcdsa.algorithm.graph import all_topo_sort
 from rcdsa.algorithm.graph import floyd_warshall
+from rcdsa.algorithm.graph import bellman_ford
 
 def test_graph():
   data = [[1,2], [0,2,3], [0,1,4], [1,4], [2,3]]
@@ -47,7 +49,28 @@ def test_shortest_path():
   assert dist2.get(0,2) == 8
   assert dist2.get(0,3) == 10
   assert dist2.get(0,4) == 10
-  
+
+  graph2 = StableGraph(directed=True)
+  edge2 = [[1, 3, 2], [4, 3, -1], [2, 4, 1], [1, 2, 1], [0, 1, 5]]
+  for v in range(5):
+    graph2.insert_vertex(v)
+  for e in edge2:
+    graph2.insert_edge(e[0], e[1], e[2])
+  dist3 = bellman_ford(graph2, 0, lambda x: x)
+  assert dist3.get(0) == 0
+  assert dist3.get(1) == 5
+  assert dist3.get(2) == 6
+  assert dist3.get(3) == 6
+  assert dist3.get(4) == 7
+
+  graph3 = StableGraph(directed=True)
+  edge3 = [[0, 1, 1], [1, 2, 1], [2, 0, -4]]
+  for v in range(3):
+    graph3.insert_vertex(v)
+  for e in edge3:
+    graph3.insert_edge(e[0], e[1], e[2])
+  with pytest.raises(RuntimeError) as exc_info:
+    dist4 = bellman_ford(graph3, 0, lambda x: x)
 
 def test_mst():
   graph = StableGraph(directed=False)
