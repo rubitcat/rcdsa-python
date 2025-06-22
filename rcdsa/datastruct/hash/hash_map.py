@@ -319,7 +319,7 @@ class HashMap:
       if curr_entry is not None:
         deleted_entry = curr_entry
         if curr_entry_parent is None:
-          bin.data = None
+          bin.data = curr_entry.next
         else:
           curr_entry_parent.next = curr_entry.next
 

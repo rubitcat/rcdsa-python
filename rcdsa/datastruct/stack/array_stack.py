@@ -23,3 +23,7 @@ class ArrayStack:
     if self.is_empty():
       raise RuntimeError("Stack is empty")
     return self._data[self._top]
+  def secondary(self):
+    if self.is_empty():
+      raise RuntimeError("Stack is empty")
+    return self._data[self._top-1]

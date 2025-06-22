@@ -59,7 +59,7 @@ class HashTable:
     return removed
 
   def remove_row(self, row):
-    self.data.remove(row)
+    return self.data.remove(row)
 
   def remove_col(self, col):
     rows = self.data.values()

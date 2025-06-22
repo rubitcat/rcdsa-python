@@ -19,3 +19,7 @@ class LinkedStack:
     if self.is_empty():
       raise RuntimeError("Stack is empty")
     return self._top.data
+  def secondary(self):
+    if self.is_empty():
+      raise RuntimeError("Stack is empty")
+    return self._top.next.data if self._top.next is not None else None
