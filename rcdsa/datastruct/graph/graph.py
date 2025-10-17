@@ -61,11 +61,11 @@ class Graph:
         curr = queue.front()
         queue.dequeue()
         callback(curr)
-        adjs = self.vetable.get_keys_by_row(curr)
-        for adj in adjs:
-          if not discovered.contains(adj):
-            queue.enqueue(adj)
-            discovered.put(adj)
+        if (adjs := self.vetable.get_keys_by_row(curr)) is not None:
+          for adj in adjs:
+            if not discovered.contains(adj):
+              queue.enqueue(adj)
+              discovered.put(adj)
     if vertex_from is not None and self.vertexs.contains(vertex_from):
       _traversal(vertex_from)
     self.vertexs.traversal(_traversal)
@@ -88,10 +88,9 @@ class Graph:
           continue
         callback(curr)
         visited.put(curr)
-        adjs = self.vetable.get_keys_by_row(curr)
-        for i in range(len(adjs)-1, -1, -1):
-          adj = adjs[i]
-          if not visited.contains(adj):
+        if (adjs := self.vetable.get_keys_by_row(curr)) is not None:
+          for i in range(len(adjs)-1, -1, -1):
+            adj = adjs[i]
             stack.push(adj)
     if vertex_from is not None and self.vertexs.contains(vertex_from):
       _traversal(vertex_from)

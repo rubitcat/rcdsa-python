@@ -47,7 +47,7 @@ class UnionFindSet:
           xp = xpp
           xpp = self._parent.get(xp)
         if path.size > 1:
-          path.traversal(lambda p: self._parent.put(p, x))
+          path.traversal(lambda p: self._parent.put(p, xp))
       else:
         while xp != xpp:
           xp = xpp

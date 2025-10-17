@@ -12,12 +12,11 @@ def test_union_find_set():
   ufs.union(1, 2)
   ufs.union(2, 3)
   
-  assert ufs.is_united(1, 2) == True
-  assert ufs.is_united(2, 3) == True
-  assert ufs.is_united(1, 3) == True
-  assert ufs.is_united(0, 3) == False
-  assert ufs.is_united(4, 3) == False
+  assert ufs.is_united(1, 2) is True
+  assert ufs.is_united(2, 3) is True
+  assert ufs.is_united(1, 3) is True
+  assert ufs.is_united(0, 3) is False
+  assert ufs.is_united(4, 3) is False
   
   ufs.union(0,1)
-  assert ufs.is_united(0, 3) == True
-
+  assert ufs.is_united(0, 3) is True
